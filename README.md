@@ -1,103 +1,153 @@
-# bpmn-from-protocol
+# BPMN from protocol
 
-Portable Agent Skill for turning source documents and protocol text into
-editable draw.io diagrams, optional BPMN 2.0 XML with BPMN-DI, previews, and
-validation reports.
+Skill для генерации редактируемых BPMN-схем из регламентов, инструкций,
+протоколов встреч, таблиц и обычного текста. Результат может включать draw.io,
+PNG, BPMN 2.0 XML с BPMN-DI, реестр шагов, перечень недостающей информации и
+отчет о валидации.
 
-## Install
+Репозиторий: <https://github.com/ErmeevEgor/BPMN_from_protocol>
 
-Keep the top-level `bpmn-from-protocol` directory intact. Copy it to the skill
-directory supported by the host agent, or give the agent the path to its
-`SKILL.md` explicitly. Skill discovery and invocation syntax are host-specific;
-the workflow and scripts are not tied to one LLM provider.
+## Самый простой способ начать работу
 
-The host must be able to read local files and run shell commands. A text-only
-chat client without filesystem and process execution cannot run the complete
-pipeline.
-
-## Runtime setup
-
-Required for normal source extraction and draw.io generation:
-
-- Python 3.11 or newer;
-- the packages in `scripts/requirements.txt`.
-
-Required when BPMN XML preview/validation is requested:
-
-- Node.js 18 or newer;
-- npm dependencies under `vendor/bpmn-diagrams/scripts/node`.
-
-Required for draw.io PNG export and strict validation against actual SVG
-routes:
-
-- draw.io Desktop CLI.
-
-Legacy binary `.doc` extraction additionally requires LibreOffice.
-
-Inspect the current host without changing it:
+Пользователю не нужно самостоятельно вводить команды в PowerShell или
+терминале. Передайте своей LLM ссылку на репозиторий и следующий запрос:
 
 ```text
-python scripts/check_runtime.py
+Скачай репозиторий https://github.com/ErmeevEgor/BPMN_from_protocol в свою
+рабочую папку. Прочитай файл SKILL.md полностью и используй bpmn-from-protocol
+как skill для следующих запросов в этом чате. Самостоятельно проверь и, если
+можешь, установи необходимые зависимости. Не проси меня вводить команды в
+терминале. Если твоя среда не позволяет скачать репозиторий, читать локальные
+файлы или запускать скрипты, сразу перечисли конкретные ограничения.
+После подготовки напиши, что skill готов к работе, и укажи, какие форматы
+результата ты сможешь сформировать: draw.io, PNG и BPMN 2.0 XML.
 ```
 
-Print installation commands without running them:
+После ответа о готовности приложите исходный документ и отправьте один из
+запросов ниже. В локальных агентных средах — Codex, Claude Code, OpenCode и
+аналогах — LLM должна сама работать с файлами и выполнять технические действия.
+
+## Если используется веб-версия LLM
+
+Надежнее скачать ZIP со страницы
+[последнего релиза](https://github.com/ErmeevEgor/BPMN_from_protocol/releases)
+и приложить к чату одновременно:
+
+1. архив `bpmn-from-protocol-….zip`;
+2. инструкцию, протокол, Excel или другой исходный документ.
+
+Затем отправьте запрос:
 
 ```text
-python scripts/setup_runtime.py
+В приложенном ZIP находится skill bpmn-from-protocol. Распакуй его, полностью
+прочитай SKILL.md и используй его для работы с приложенным исходным документом.
+Самостоятельно выполни доступную подготовку среды; не проси меня вводить
+команды. Если в этой веб-среде нельзя запускать файлы skill или создавать
+draw.io/BPMN, сначала честно сообщи об ограничении и не выдавай текстовое
+описание процесса за проверенную готовую схему.
 ```
 
-Install Python and Node dependencies explicitly:
+Одна ссылка на репозиторий достаточна лишь для веб-LLM, которая умеет открывать
+GitHub, скачивать файлы и запускать код. Обычный текстовый чат может прочитать
+инструкции, но не всегда способен выполнить полный генератор.
+
+## Готовые запросы для генерации
+
+В каждый запрос добавьте исходный файл и, если в нем описано несколько
+процессов, явно назовите нужный процесс или лист Excel.
+
+### L1 — быстрый черновик
+
+Для первого обсуждения. Целевое время — 2–4 минуты, без цикла косметической
+правки. Результат намеренно имеет статус черновика.
 
 ```text
-python scripts/setup_runtime.py --install
+Используй skill bpmn-from-protocol и приложенный документ. Создай BPMN-схему
+процесса «<название процесса>» на уровне L1 — быстрый черновик. Покажи основной
+маршрут и все подтвержденные развилки, роли, системы и ключевые входы/выходы.
+Не придумывай отсутствующие факты: вынеси их в список информационных пробелов.
+Сформируй редактируемый draw.io и PNG, а BPMN 2.0 XML — только если среда может
+его корректно построить. Остановись после обязательной проверки и верни ссылки
+на все созданные файлы вместе со статусом валидации.
 ```
 
-Set `DRAWIO_CLI` to the draw.io executable when it is not on `PATH`. An
-optional `config/tooling.json` in the working directory may instead contain a
-`drawio_cli` path. Set `LIBREOFFICE_CLI` similarly for a non-standard
-LibreOffice installation.
+### L2 — рабочая схема, рекомендуется по умолчанию
 
-## Inputs
-
-The deterministic extractor supports `.txt`, `.md`, `.html`, `.docx`, `.doc`,
-`.pdf`, `.xlsx`, `.xlsm`, `.csv`, and `.tsv`. Spreadsheet extraction emits
-stable cell locators such as `'План'!A12`. OCR is not automatic.
-
-## Quality levels
-
-- `L1` — express draft, normally 2–4 minutes and no cosmetic correction loop.
-- `L2` — working diagram, normally 7–10 minutes and the default.
-- `L3` — audit-ready diagram, normally 12–20 minutes with deeper review.
-
-Example prompts:
+Для анализа и рабочих встреч. Целевое время — 7–10 минут, допускается одна
+обоснованная корректировка наиболее существенной ошибки.
 
 ```text
-Use bpmn-from-protocol. Create an L1 express draft from the attached protocol.
-Use bpmn-from-protocol. Create a working L2 BPMN diagram from this DOCX.
-Use bpmn-from-protocol. Create an audit-ready L3 package with BPMN 2.0 XML.
+Используй skill bpmn-from-protocol и приложенный документ. Создай рабочую
+BPMN-схему процесса «<название процесса>» на уровне L2. Для каждого шага
+отрази подтвержденную роль, систему, основной бизнес-объект, основание действия
+и наблюдаемый результат; добавь реальные развилки и основные исключения.
+Сформируй draw.io, PNG и BPMN 2.0 XML с BPMN-DI. Проведи семантическую и
+визуальную валидацию, включая привязку стрелок к элементам, пересечения,
+наложения текста и корректность артефактов. Не додумывай сведения из источника,
+а запиши недостающие данные в information-gaps. Верни ссылки на результаты,
+статус проверки и оставшиеся замечания.
 ```
 
-## Outputs
+Если уровень не указан, skill должен выбрать L2 автоматически.
 
-The pipeline writes its deliverables under the selected workspace:
+### L3 — детальная схема для регламента или приемки
 
-- `output/models/` — canonical semantic model;
-- `output/registries/` — semantic/render registries and information gaps;
-- `output/drawio/` — editable draw.io file;
-- `output/preview/` — draw.io PNG when draw.io CLI is available;
-- `output/bpmn/` and `output/bpmn-preview/` — requested BPMN XML and preview;
-- `output/validation/` — machine-readable and human-readable reports.
+Для эталонной модели и независимой проверки. Целевое время — 12–20 минут;
+первый корректный результат должен быть сохранен не позднее 10-й минуты.
 
-If draw.io Desktop is unavailable, the editable `.drawio` remains deliverable
-and the result is marked `NEEDS_REVIEW`; PNG and actual-SVG route validation are
-reported as unavailable. Missing optional tooling must not delete a generated
-candidate.
+```text
+Используй skill bpmn-from-protocol и приложенный документ. Создай полный пакет
+по процессу «<название процесса>» на уровне L3 — для регламента и приемки.
+Отрази все подтвержденные маршруты, исключения, контроли, состояния документов,
+роли, системы и межсистемные передачи. Не смешивай подтвержденные факты,
+предположения и открытые вопросы. Если схема перегружена, раздели ее на обзор
+и детальные подпроцессы. Сформируй draw.io, PNG, BPMN 2.0 XML с BPMN-DI,
+семантический реестр, information-gaps и отчет валидации. Проверь каждый формат
+и их взаимную согласованность. Не трать весь лимит на бесконечные исправления:
+верни лучший корректный вариант и честный NEEDS_REVIEW, если остались проблемы.
+```
 
-## Known limits
+## Что можно приложить
 
-- Different LLMs may produce different semantic models from the same ambiguous
-  source. Rendering and validation are deterministic after `process_model.json`
-  is fixed.
-- Scanned PDFs and images require OCR supplied by the host.
-- Automatic skill discovery, attachment access, and image inspection differ by
-  agent host.
+Поддерживаются `.txt`, `.md`, `.html`, `.docx`, `.doc`, `.pdf`, `.xlsx`,
+`.xlsm`, `.csv` и `.tsv`. Можно также вставить текст протокола прямо в чат.
+Сканированные PDF и изображения требуют возможности распознавать текст.
+
+Полезно сразу указать:
+
+- название процесса или лист Excel;
+- требуемый уровень L1, L2 или L3;
+- нужные форматы: draw.io, PNG, BPMN 2.0 XML;
+- назначение схемы: обсуждение, рабочая документация или приемка.
+
+## Какой результат ожидать
+
+Полноценный запуск создает:
+
+- модель процесса;
+- реестр шагов и информационных пробелов;
+- редактируемый файл draw.io;
+- PNG-предпросмотр при доступном экспорте;
+- BPMN 2.0 XML и его предпросмотр, если они запрошены;
+- машинный и читаемый человеком отчеты о валидации.
+
+Отсутствие дополнительного ПО не должно приводить к потере уже созданной
+схемы. В таком случае LLM обязана вернуть доступный кандидат со статусом
+`NEEDS_REVIEW` и перечислить, какую проверку выполнить не удалось.
+
+## Совместимость
+
+Skill не привязан к поставщику LLM, но среда должна уметь читать и создавать
+файлы, а также запускать Python. Для BPMN-предпросмотра нужен Node.js; для
+строгого PNG/SVG-контроля — draw.io Desktop; для старых бинарных `.doc` —
+LibreOffice. Агентная LLM может подготовить эти зависимости самостоятельно.
+
+Разные LLM могут по-разному интерпретировать неоднозначный исходный текст.
+После формирования единой модели процесса рендеринг и автоматические проверки
+выполняются детерминированно.
+
+## Для разработчиков
+
+Технические требования находятся в [`references/runtime.md`](references/runtime.md).
+Инструкции агента — в [`SKILL.md`](SKILL.md), различия уровней — в
+[`references/quality-levels.md`](references/quality-levels.md).
