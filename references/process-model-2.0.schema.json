@@ -1,0 +1,113 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://arman.local/schemas/process-model-2.0.schema.json",
+  "title": "ARMAN BPMN canonical semantic process model",
+  "type": "object",
+  "required": ["schema_version", "process_id", "process_name", "process_type", "start", "steps", "gateways"],
+  "properties": {
+    "schema_version": {"const": "2.0"},
+    "process_id": {"type": "string", "minLength": 1},
+    "process_name": {"type": "string", "minLength": 1},
+    "process_type": {"enum": ["AS-IS", "TO-BE"]},
+    "start": {"type": "string", "minLength": 1},
+    "steps": {"type": "array", "items": {"$ref": "#/$defs/activity"}},
+    "gateways": {"type": "array", "items": {"type": "object"}},
+    "participants": {"type": "array", "items": {"$ref": "#/$defs/participant"}},
+    "message_flows": {"type": "array", "items": {"$ref": "#/$defs/messageFlow"}},
+    "information_gaps": {"type": "array", "items": {"$ref": "#/$defs/informationGap"}}
+  },
+  "$defs": {
+    "sourceRef": {
+      "type": "object",
+      "required": ["source_file", "section", "locator"],
+      "properties": {
+        "source_file": {"type": "string"},
+        "source_type": {"type": "string"},
+        "section": {"type": "string"},
+        "locator": {"type": "string"},
+        "excerpt": {"type": "string"}
+      }
+    },
+    "artifact": {
+      "type": "object",
+      "required": ["name", "kind", "source_refs"],
+      "properties": {
+        "name": {"type": "string", "minLength": 1},
+        "kind": {"enum": ["system_document", "external_document", "reference_data", "physical_object", "location", "print_form", "message", "data", "other"]},
+        "source_refs": {"type": "array", "items": {"$ref": "#/$defs/sourceRef"}}
+      },
+      "additionalProperties": true
+    },
+    "businessObject": {
+      "type": ["object", "null"],
+      "properties": {
+        "name": {"type": "string"},
+        "kind": {"enum": ["system_document", "external_document", "reference_data", "physical_object", "location", "print_form", "message", "data", "other"]}
+      }
+    },
+    "participant": {
+      "type": "object",
+      "required": ["id", "name"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "name": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": true
+    },
+    "messageFlow": {
+      "type": "object",
+      "required": ["id", "source", "target"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "source": {"type": "string", "minLength": 1},
+        "target": {"type": "string", "minLength": 1},
+        "name": {"type": "string"}
+      },
+      "additionalProperties": true
+    },
+    "informationGap": {
+      "type": "object",
+      "required": ["step_id", "missing_information", "diagram_impact", "customer_question", "status"],
+      "properties": {
+        "step_id": {"type": "string", "minLength": 1},
+        "missing_information": {"type": "string", "minLength": 1},
+        "diagram_impact": {"type": "string", "minLength": 1},
+        "customer_question": {"type": "string", "minLength": 1},
+        "status": {"enum": ["OPEN", "ASSUMPTION", "RESOLVED"]},
+        "severity": {"enum": ["critical", "high", "medium", "low"]}
+      },
+      "additionalProperties": false
+    },
+    "activity": {
+      "type": "object",
+      "required": ["id", "parent_id", "name", "role", "system", "action", "business_object", "task_type", "inputs", "outputs", "control", "condition", "exception_refs", "knowledge_status", "source_refs", "next", "basis", "observable_result", "verification_criterion"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "parent_id": {"type": ["string", "null"]},
+        "name": {"type": "string", "minLength": 1},
+        "role": {"type": "string"},
+        "system": {"type": "string"},
+        "execution_channel": {"type": ["string", "null"]},
+        "action": {"type": ["string", "null"]},
+        "business_object": {"$ref": "#/$defs/businessObject"},
+        "basis": {"type": ["string", "null"]},
+        "observable_result": {"type": ["string", "null"]},
+        "verification_criterion": {"type": ["string", "null"]},
+        "pool_id": {"type": ["string", "null"]},
+        "task_type": {"enum": ["start_event", "end_event", "user_task", "manual_task", "service_task", "send_task", "receive_task", "subprocess"]},
+        "called_process_id": {"type": ["string", "null"]},
+        "criticality": {"enum": ["critical", "normal"]},
+        "inputs": {"type": "array", "items": {"$ref": "#/$defs/artifact"}},
+        "outputs": {"type": "array", "items": {"$ref": "#/$defs/artifact"}},
+        "control": {"type": "array", "items": {"type": "string"}},
+        "condition": {"type": ["string", "null"]},
+        "exception_refs": {"type": "array", "items": {"type": "string"}},
+        "knowledge_status": {"enum": ["CONFIRMED", "PROJECT_RECOMMENDATION", "ASSUMPTION", "OPEN", "REQUIRES_1C_METADATA_VALIDATION"]},
+        "source_refs": {"type": "array", "items": {"$ref": "#/$defs/sourceRef"}},
+        "next": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
+}

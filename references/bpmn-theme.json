@@ -1,0 +1,16 @@
+{
+  "profile": "corporate_role_overlays_v2",
+  "activity": {"fill": "#FFFFFF", "stroke": "#404040", "font": "#1A1A1A"},
+  "role_overlay": {"fill": "#6366F1", "stroke": "#4F46E5", "font": "#FFFFFF"},
+  "system_overlay": {"fill": "#F3F4F6", "stroke": "#9CA3AF", "font": "#595959"},
+  "system_object": {"fill": "#FFFFFF", "stroke": "#595959"},
+  "system_report": {"fill": "#FFDCC2", "stroke": "#B66A3C"},
+  "print_form": {"fill": "#E7FCCB", "stroke": "#648A3A"},
+  "external_document": {"fill": "#F3F3F3", "stroke": "#8C8C8C"},
+  "physical_object": {"fill": "#FCE8E6", "stroke": "#A65A4E"},
+  "message": {"fill": "#E3F2FD", "stroke": "#3978A8"},
+  "other": {"fill": "#EEF2F6", "stroke": "#607D8B"},
+  "gateway": {"fill": "#FCF7E5", "stroke": "#C9A227"},
+  "start_event": {"fill": "#EAF5EE", "stroke": "#4F9D69"},
+  "end_event": {"fill": "#F8ECEC", "stroke": "#C0504D"}
+}

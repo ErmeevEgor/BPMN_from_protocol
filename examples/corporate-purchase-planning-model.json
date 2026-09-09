@@ -1,0 +1,1023 @@
+{
+  "schema_version": "2.1",
+  "render_profile": "corporate_role_overlays_v2",
+  "process_id": "corporate-purchase-planning",
+  "process_name": "Планирование закупок",
+  "process_type": "TO-BE",
+  "source_file": "ПЗ_планирование_закупок_BPMN_эталон.drawio",
+  "source_sections": [
+    "Page-1"
+  ],
+  "start": "START",
+  "steps": [
+    {
+      "id": "START",
+      "parent_id": null,
+      "pool_id": "PART_MAIN",
+      "name": "Потребность получена",
+      "role": null,
+      "performer_kind": "process",
+      "responsible_owner": null,
+      "display_codes": [],
+      "display_code_origin": "generated",
+      "presentation": {
+        "style_class": null,
+        "fill_override": null,
+        "source_refs": []
+      },
+      "task_type": "start_event",
+      "system": "",
+      "execution_channel": null,
+      "action": "Потребность получена",
+      "business_object": {
+        "name": "План закупок",
+        "kind": "system_object"
+      },
+      "basis": null,
+      "observable_result": null,
+      "verification_criterion": null,
+      "inputs": [],
+      "outputs": [],
+      "artifact_assessment": {
+        "input": {
+          "status": "not_applicable",
+          "information_gap_ref": null
+        },
+        "output": {
+          "status": "not_applicable",
+          "information_gap_ref": null
+        }
+      },
+      "control": [],
+      "condition": null,
+      "exception_refs": [],
+      "knowledge_status": "PROJECT_RECOMMENDATION",
+      "source_refs": [
+        {
+          "source_file": "ПЗ_планирование_закупок_BPMN_эталон.drawio",
+          "section": "Page-1",
+          "locator": "external-reference",
+          "excerpt": "visual reference"
+        }
+      ],
+      "next": [
+        "U1"
+      ],
+      "layout_band": "happy",
+      "event_definition": "message"
+    },
+    {
+      "id": "U1",
+      "parent_id": null,
+      "pool_id": "PART_MAIN",
+      "name": "Проверить потребность",
+      "role": "Планировщик",
+      "performer_kind": "human",
+      "responsible_owner": null,
+      "display_codes": [
+        "ПЗ.3.1",
+        "ПЗ.4.1"
+      ],
+      "display_code_origin": "source",
+      "presentation": {
+        "style_class": null,
+        "fill_override": null,
+        "source_refs": []
+      },
+      "task_type": "user_task",
+      "system": "1С:ERP УХ",
+      "execution_channel": null,
+      "action": "Проверить потребность",
+      "business_object": {
+        "name": "План закупок",
+        "kind": "system_object"
+      },
+      "basis": "Регламент планирования закупок",
+      "observable_result": "Результат доступен для следующего участника",
+      "verification_criterion": "Состояние объекта проверено",
+      "inputs": [],
+      "outputs": [],
+      "artifact_assessment": {
+        "input": {
+          "status": "not_applicable",
+          "information_gap_ref": null
+        },
+        "output": {
+          "status": "not_applicable",
+          "information_gap_ref": null
+        }
+      },
+      "control": [],
+      "condition": null,
+      "exception_refs": [],
+      "knowledge_status": "PROJECT_RECOMMENDATION",
+      "source_refs": [
+        {
+          "source_file": "ПЗ_планирование_закупок_BPMN_эталон.drawio",
+          "section": "Page-1",
+          "locator": "external-reference",
+          "excerpt": "visual reference"
+        }
+      ],
+      "next": [
+        "U2"
+      ],
+      "layout_band": "happy"
+    },
+    {
+      "id": "U2",
+      "parent_id": null,
+      "pool_id": "PART_MAIN",
+      "name": "Уточнить параметры",
+      "role": "Планировщик",
+      "performer_kind": "human",
+      "responsible_owner": null,
+      "display_codes": [
+        "ПЗ.4.2"
+      ],
+      "display_code_origin": "source",
+      "presentation": {
+        "style_class": null,
+        "fill_override": null,
+        "source_refs": []
+      },
+      "task_type": "user_task",
+      "system": "1С:ERP УХ",
+      "execution_channel": null,
+      "action": "Уточнить параметры",
+      "business_object": {
+        "name": "План закупок",
+        "kind": "system_object"
+      },
+      "basis": "Регламент планирования закупок",
+      "observable_result": "Результат доступен для следующего участника",
+      "verification_criterion": "Состояние объекта проверено",
+      "inputs": [],
+      "outputs": [],
+      "artifact_assessment": {
+        "input": {
+          "status": "not_applicable",
+          "information_gap_ref": null
+        },
+        "output": {
+          "status": "not_applicable",
+          "information_gap_ref": null
+        }
+      },
+      "control": [],
+      "condition": null,
+      "exception_refs": [],
+      "knowledge_status": "PROJECT_RECOMMENDATION",
+      "source_refs": [
+        {
+          "source_file": "ПЗ_планирование_закупок_BPMN_эталон.drawio",
+          "section": "Page-1",
+          "locator": "external-reference",
+          "excerpt": "visual reference"
+        }
+      ],
+      "next": [
+        "MAN"
+      ],
+      "layout_band": "happy"
+    },
+    {
+      "id": "MAN",
+      "parent_id": null,
+      "pool_id": "PART_MAIN",
+      "name": "Сверить бумажный лист",
+      "role": "Планировщик",
+      "performer_kind": "human",
+      "responsible_owner": null,
+      "display_codes": [
+        "ПЗ.4.3"
+      ],
+      "display_code_origin": "source",
+      "presentation": {
+        "style_class": null,
+        "fill_override": null,
+        "source_refs": []
+      },
+      "task_type": "manual_task",
+      "system": "Вне ИС",
+      "execution_channel": null,
+      "action": "Сверить бумажный лист",
+      "business_object": {
+        "name": "План закупок",
+        "kind": "system_object"
+      },
+      "basis": "Регламент планирования закупок",
+      "observable_result": "Результат доступен для следующего участника",
+      "verification_criterion": "Состояние объекта проверено",
+      "inputs": [],
+      "outputs": [],
+      "artifact_assessment": {
+        "input": {
+          "status": "not_applicable",
+          "information_gap_ref": null
+        },
+        "output": {
+          "status": "not_applicable",
+          "information_gap_ref": null
+        }
+      },
+      "control": [],
+      "condition": null,
+      "exception_refs": [],
+      "knowledge_status": "PROJECT_RECOMMENDATION",
+      "source_refs": [
+        {
+          "source_file": "ПЗ_планирование_закупок_BPMN_эталон.drawio",
+          "section": "Page-1",
+          "locator": "external-reference",
+          "excerpt": "visual reference"
+        }
+      ],
+      "next": [
+        "SRV"
+      ],
+      "layout_band": "happy"
+    },
+    {
+      "id": "SRV",
+      "parent_id": null,
+      "pool_id": "PART_MAIN",
+      "name": "Рассчитать потребность",
+      "role": null,
+      "performer_kind": "automated",
+      "responsible_owner": null,
+      "display_codes": [
+        "ПЗ.5.1"
+      ],
+      "display_code_origin": "source",
+      "presentation": {
+        "style_class": null,
+        "fill_override": null,
+        "source_refs": []
+      },
+      "task_type": "service_task",
+      "system": "1С:ERP УХ",
+      "execution_channel": null,
+      "action": "Рассчитать потребность",
+      "business_object": {
+        "name": "План закупок",
+        "kind": "system_object"
+      },
+      "basis": "Регламент планирования закупок",
+      "observable_result": "Результат доступен для следующего участника",
+      "verification_criterion": "Состояние объекта проверено",
+      "inputs": [],
+      "outputs": [],
+      "artifact_assessment": {
+        "input": {
+          "status": "not_applicable",
+          "information_gap_ref": null
+        },
+        "output": {
+          "status": "not_applicable",
+          "information_gap_ref": null
+        }
+      },
+      "control": [],
+      "condition": null,
+      "exception_refs": [],
+      "knowledge_status": "PROJECT_RECOMMENDATION",
+      "source_refs": [
+        {
+          "source_file": "ПЗ_планирование_закупок_BPMN_эталон.drawio",
+          "section": "Page-1",
+          "locator": "external-reference",
+          "excerpt": "visual reference"
+        }
+      ],
+      "next": [
+        "REPORT"
+      ],
+      "layout_band": "happy"
+    },
+    {
+      "id": "REPORT",
+      "parent_id": null,
+      "pool_id": "PART_MAIN",
+      "name": "Сформировать отчёт",
+      "role": null,
+      "performer_kind": "automated",
+      "responsible_owner": null,
+      "display_codes": [
+        "ПЗ.5.2"
+      ],
+      "display_code_origin": "source",
+      "presentation": {
+        "style_class": null,
+        "fill_override": null,
+        "source_refs": []
+      },
+      "task_type": "service_task",
+      "system": "1С:ERP УХ",
+      "execution_channel": null,
+      "action": "Сформировать",
+      "business_object": {
+        "name": "План закупок",
+        "kind": "system_object"
+      },
+      "basis": "Регламент планирования закупок",
+      "observable_result": "Результат доступен для следующего участника",
+      "verification_criterion": "Состояние объекта проверено",
+      "inputs": [],
+      "outputs": [
+        {
+          "logical_object_id": "report.need",
+          "name": "Отчёт по потребности",
+          "state": null,
+          "kind": "system_report",
+          "metadata_type": "document",
+          "system": "1С:ERP УХ",
+          "bpmn_representation": "data_object",
+          "source_refs": [
+            {
+              "source_file": "ПЗ_планирование_закупок_BPMN_эталон.drawio",
+              "section": "Page-1",
+              "locator": "external-reference",
+              "excerpt": "visual reference"
+            }
+          ]
+        }
+      ],
+      "artifact_assessment": {
+        "input": {
+          "status": "not_applicable",
+          "information_gap_ref": null
+        },
+        "output": {
+          "status": "identified",
+          "information_gap_ref": null
+        }
+      },
+      "control": [],
+      "condition": null,
+      "exception_refs": [],
+      "knowledge_status": "PROJECT_RECOMMENDATION",
+      "source_refs": [
+        {
+          "source_file": "ПЗ_планирование_закупок_BPMN_эталон.drawio",
+          "section": "Page-1",
+          "locator": "external-reference",
+          "excerpt": "visual reference"
+        }
+      ],
+      "next": [
+        "PRINT"
+      ],
+      "layout_band": "happy"
+    },
+    {
+      "id": "PRINT",
+      "parent_id": null,
+      "pool_id": "PART_MAIN",
+      "name": "Распечатать план",
+      "role": "Планировщик",
+      "performer_kind": "human",
+      "responsible_owner": null,
+      "display_codes": [
+        "ПЗ.6.1"
+      ],
+      "display_code_origin": "source",
+      "presentation": {
+        "style_class": null,
+        "fill_override": null,
+        "source_refs": []
+      },
+      "task_type": "user_task",
+      "system": "1С:ERP УХ",
+      "execution_channel": null,
+      "action": "Распечатать",
+      "business_object": {
+        "name": "План закупок",
+        "kind": "system_object"
+      },
+      "basis": "Регламент планирования закупок",
+      "observable_result": "Результат доступен для следующего участника",
+      "verification_criterion": "Состояние объекта проверено",
+      "inputs": [],
+      "outputs": [
+        {
+          "logical_object_id": "print.purchase-plan",
+          "name": "Печатная форма плана",
+          "state": null,
+          "kind": "print_form",
+          "metadata_type": "document",
+          "system": "1С:ERP УХ",
+          "bpmn_representation": "data_object",
+          "source_refs": [
+            {
+              "source_file": "ПЗ_планирование_закупок_BPMN_эталон.drawio",
+              "section": "Page-1",
+              "locator": "external-reference",
+              "excerpt": "visual reference"
+            }
+          ]
+        }
+      ],
+      "artifact_assessment": {
+        "input": {
+          "status": "not_applicable",
+          "information_gap_ref": null
+        },
+        "output": {
+          "status": "identified",
+          "information_gap_ref": null
+        }
+      },
+      "control": [],
+      "condition": null,
+      "exception_refs": [],
+      "knowledge_status": "PROJECT_RECOMMENDATION",
+      "source_refs": [
+        {
+          "source_file": "ПЗ_планирование_закупок_BPMN_эталон.drawio",
+          "section": "Page-1",
+          "locator": "external-reference",
+          "excerpt": "visual reference"
+        }
+      ],
+      "next": [
+        "CREATE"
+      ],
+      "layout_band": "happy"
+    },
+    {
+      "id": "CREATE",
+      "parent_id": null,
+      "pool_id": "PART_MAIN",
+      "name": "Создать план закупок",
+      "role": "Планировщик",
+      "performer_kind": "human",
+      "responsible_owner": null,
+      "display_codes": [
+        "ПЗ.6.2"
+      ],
+      "display_code_origin": "source",
+      "presentation": {
+        "style_class": null,
+        "fill_override": null,
+        "source_refs": []
+      },
+      "task_type": "user_task",
+      "system": "1С:ERP УХ",
+      "execution_channel": null,
+      "action": "Создать",
+      "business_object": {
+        "name": "План закупок",
+        "kind": "system_object"
+      },
+      "basis": "Регламент планирования закупок",
+      "observable_result": "Результат доступен для следующего участника",
+      "verification_criterion": "Состояние объекта проверено",
+      "inputs": [],
+      "outputs": [
+        {
+          "logical_object_id": "document.purchase-plan",
+          "name": "План закупок",
+          "state": "Согласован",
+          "kind": "system_object",
+          "metadata_type": "document",
+          "system": "1С:ERP УХ",
+          "bpmn_representation": "data_object",
+          "source_refs": [
+            {
+              "source_file": "ПЗ_планирование_закупок_BPMN_эталон.drawio",
+              "section": "Page-1",
+              "locator": "external-reference",
+              "excerpt": "visual reference"
+            }
+          ]
+        }
+      ],
+      "artifact_assessment": {
+        "input": {
+          "status": "not_applicable",
+          "information_gap_ref": null
+        },
+        "output": {
+          "status": "identified",
+          "information_gap_ref": null
+        }
+      },
+      "control": [],
+      "condition": null,
+      "exception_refs": [],
+      "knowledge_status": "PROJECT_RECOMMENDATION",
+      "source_refs": [
+        {
+          "source_file": "ПЗ_планирование_закупок_BPMN_эталон.drawio",
+          "section": "Page-1",
+          "locator": "external-reference",
+          "excerpt": "visual reference"
+        }
+      ],
+      "next": [
+        "GW_SPLIT"
+      ],
+      "layout_band": "happy"
+    },
+    {
+      "id": "APPROVE",
+      "parent_id": null,
+      "pool_id": "PART_MAIN",
+      "name": "Утвердить план",
+      "role": "Руководитель",
+      "performer_kind": "human",
+      "responsible_owner": null,
+      "display_codes": [
+        "ПЗ.7.1"
+      ],
+      "display_code_origin": "source",
+      "presentation": {
+        "style_class": null,
+        "fill_override": null,
+        "source_refs": []
+      },
+      "task_type": "user_task",
+      "system": "1С:ERP УХ",
+      "execution_channel": null,
+      "action": "Утвердить",
+      "business_object": {
+        "name": "План закупок",
+        "kind": "system_object"
+      },
+      "basis": "Регламент планирования закупок",
+      "observable_result": "Результат доступен для следующего участника",
+      "verification_criterion": "Состояние объекта проверено",
+      "inputs": [
+        {
+          "logical_object_id": "document.purchase-plan",
+          "name": "План закупок",
+          "state": "Согласован",
+          "kind": "system_object",
+          "metadata_type": "document",
+          "system": "1С:ERP УХ",
+          "bpmn_representation": "data_object",
+          "source_refs": [
+            {
+              "source_file": "ПЗ_планирование_закупок_BPMN_эталон.drawio",
+              "section": "Page-1",
+              "locator": "external-reference",
+              "excerpt": "visual reference"
+            }
+          ]
+        }
+      ],
+      "outputs": [
+        {
+          "logical_object_id": "document.purchase-plan",
+          "name": "План закупок",
+          "state": "Утвержден",
+          "kind": "system_object",
+          "metadata_type": "document",
+          "system": "1С:ERP УХ",
+          "bpmn_representation": "data_object",
+          "source_refs": [
+            {
+              "source_file": "ПЗ_планирование_закупок_BPMN_эталон.drawio",
+              "section": "Page-1",
+              "locator": "external-reference",
+              "excerpt": "visual reference"
+            }
+          ]
+        }
+      ],
+      "artifact_assessment": {
+        "input": {
+          "status": "identified",
+          "information_gap_ref": null
+        },
+        "output": {
+          "status": "identified",
+          "information_gap_ref": null
+        }
+      },
+      "control": [],
+      "condition": null,
+      "exception_refs": [],
+      "knowledge_status": "PROJECT_RECOMMENDATION",
+      "source_refs": [
+        {
+          "source_file": "ПЗ_планирование_закупок_BPMN_эталон.drawio",
+          "section": "Page-1",
+          "locator": "external-reference",
+          "excerpt": "visual reference"
+        }
+      ],
+      "next": [
+        "CALL"
+      ],
+      "layout_band": "happy"
+    },
+    {
+      "id": "REWORK",
+      "parent_id": null,
+      "pool_id": "PART_MAIN",
+      "name": "Уточнить план",
+      "role": "Планировщик",
+      "performer_kind": "human",
+      "responsible_owner": null,
+      "display_codes": [
+        "ПЗ.7.2"
+      ],
+      "display_code_origin": "source",
+      "presentation": {
+        "style_class": null,
+        "fill_override": null,
+        "source_refs": []
+      },
+      "task_type": "user_task",
+      "system": "1С:ERP УХ",
+      "execution_channel": null,
+      "action": "Обновить",
+      "business_object": {
+        "name": "План закупок",
+        "kind": "system_object"
+      },
+      "basis": "Регламент планирования закупок",
+      "observable_result": "Результат доступен для следующего участника",
+      "verification_criterion": "Состояние объекта проверено",
+      "inputs": [
+        {
+          "logical_object_id": "document.purchase-plan",
+          "name": "План закупок",
+          "state": "Согласован",
+          "kind": "system_object",
+          "metadata_type": "document",
+          "system": "1С:ERP УХ",
+          "bpmn_representation": "data_object",
+          "source_refs": [
+            {
+              "source_file": "ПЗ_планирование_закупок_BPMN_эталон.drawio",
+              "section": "Page-1",
+              "locator": "external-reference",
+              "excerpt": "visual reference"
+            }
+          ]
+        }
+      ],
+      "outputs": [
+        {
+          "logical_object_id": "document.purchase-plan",
+          "name": "План закупок",
+          "state": "Согласован",
+          "kind": "system_object",
+          "metadata_type": "document",
+          "system": "1С:ERP УХ",
+          "bpmn_representation": "data_object",
+          "source_refs": [
+            {
+              "source_file": "ПЗ_планирование_закупок_BPMN_эталон.drawio",
+              "section": "Page-1",
+              "locator": "external-reference",
+              "excerpt": "visual reference"
+            }
+          ]
+        }
+      ],
+      "artifact_assessment": {
+        "input": {
+          "status": "identified",
+          "information_gap_ref": null
+        },
+        "output": {
+          "status": "identified",
+          "information_gap_ref": null
+        }
+      },
+      "control": [],
+      "condition": null,
+      "exception_refs": [],
+      "knowledge_status": "PROJECT_RECOMMENDATION",
+      "source_refs": [
+        {
+          "source_file": "ПЗ_планирование_закупок_BPMN_эталон.drawio",
+          "section": "Page-1",
+          "locator": "external-reference",
+          "excerpt": "visual reference"
+        }
+      ],
+      "next": [
+        "GW_SPLIT"
+      ],
+      "layout_band": "exception"
+    },
+    {
+      "id": "CALL",
+      "parent_id": null,
+      "pool_id": "PART_MAIN",
+      "name": "Передать в закупки",
+      "role": null,
+      "performer_kind": "process",
+      "responsible_owner": null,
+      "display_codes": [
+        "ПЗ.8.1"
+      ],
+      "display_code_origin": "source",
+      "presentation": {
+        "style_class": null,
+        "fill_override": null,
+        "source_refs": []
+      },
+      "task_type": "call_activity",
+      "system": "Каталог процессов",
+      "execution_channel": null,
+      "action": "Передать в закупки",
+      "business_object": {
+        "name": "План закупок",
+        "kind": "system_object"
+      },
+      "basis": "Регламент планирования закупок",
+      "observable_result": "Результат доступен для следующего участника",
+      "verification_criterion": "Состояние объекта проверено",
+      "inputs": [
+        {
+          "logical_object_id": "document.purchase-plan",
+          "name": "План закупок",
+          "state": "Утвержден",
+          "kind": "system_object",
+          "metadata_type": "document",
+          "system": "1С:ERP УХ",
+          "bpmn_representation": "data_object",
+          "source_refs": [
+            {
+              "source_file": "ПЗ_планирование_закупок_BPMN_эталон.drawio",
+              "section": "Page-1",
+              "locator": "external-reference",
+              "excerpt": "visual reference"
+            }
+          ]
+        }
+      ],
+      "outputs": [],
+      "artifact_assessment": {
+        "input": {
+          "status": "identified",
+          "information_gap_ref": null
+        },
+        "output": {
+          "status": "not_applicable",
+          "information_gap_ref": null
+        }
+      },
+      "control": [],
+      "condition": null,
+      "exception_refs": [],
+      "knowledge_status": "PROJECT_RECOMMENDATION",
+      "source_refs": [
+        {
+          "source_file": "ПЗ_планирование_закупок_BPMN_эталон.drawio",
+          "section": "Page-1",
+          "locator": "external-reference",
+          "excerpt": "visual reference"
+        }
+      ],
+      "next": [
+        "END"
+      ],
+      "layout_band": "happy",
+      "called_process_id": "purchases"
+    },
+    {
+      "id": "END",
+      "parent_id": null,
+      "pool_id": "PART_MAIN",
+      "name": "План передан",
+      "role": null,
+      "performer_kind": "process",
+      "responsible_owner": null,
+      "display_codes": [],
+      "display_code_origin": "generated",
+      "presentation": {
+        "style_class": null,
+        "fill_override": null,
+        "source_refs": []
+      },
+      "task_type": "end_event",
+      "system": "",
+      "execution_channel": null,
+      "action": "План передан",
+      "business_object": {
+        "name": "План закупок",
+        "kind": "system_object"
+      },
+      "basis": null,
+      "observable_result": null,
+      "verification_criterion": null,
+      "inputs": [],
+      "outputs": [],
+      "artifact_assessment": {
+        "input": {
+          "status": "not_applicable",
+          "information_gap_ref": null
+        },
+        "output": {
+          "status": "not_applicable",
+          "information_gap_ref": null
+        }
+      },
+      "control": [],
+      "condition": null,
+      "exception_refs": [],
+      "knowledge_status": "PROJECT_RECOMMENDATION",
+      "source_refs": [
+        {
+          "source_file": "ПЗ_планирование_закупок_BPMN_эталон.drawio",
+          "section": "Page-1",
+          "locator": "external-reference",
+          "excerpt": "visual reference"
+        }
+      ],
+      "next": [],
+      "layout_band": "happy"
+    }
+  ],
+  "gateways": [
+    {
+      "id": "GW_SPLIT",
+      "name": "План согласован?",
+      "role": null,
+      "gateway_type": "xor",
+      "gateway_role": "split",
+      "paired_gateway_id": null,
+      "source_refs": [
+        {
+          "source_file": "ПЗ_планирование_закупок_BPMN_эталон.drawio",
+          "section": "Page-1",
+          "locator": "external-reference",
+          "excerpt": "visual reference"
+        }
+      ],
+      "next": [
+        "APPROVE",
+        "REWORK"
+      ],
+      "branches": [
+        {
+          "to": "APPROVE",
+          "condition": "Да",
+          "default": false
+        },
+        {
+          "to": "REWORK",
+          "condition": "Нет",
+          "default": true
+        }
+      ]
+    }
+  ],
+  "participants": [
+    {
+      "id": "PART_MAIN",
+      "name": "Планирование закупок",
+      "participant_kind": "current_process",
+      "black_box": false,
+      "linked_process": null,
+      "source_refs": [
+        {
+          "source_file": "ПЗ_планирование_закупок_BPMN_эталон.drawio",
+          "section": "Page-1",
+          "locator": "external-reference",
+          "excerpt": "visual reference"
+        }
+      ]
+    },
+    {
+      "id": "PART_PREV",
+      "name": "Планирование продаж",
+      "participant_kind": "external_process",
+      "black_box": true,
+      "linked_process": {
+        "id": "sales-planning",
+        "uri": null,
+        "source_refs": [
+          {
+            "source_file": "ПЗ_планирование_закупок_BPMN_эталон.drawio",
+            "section": "Page-1",
+            "locator": "external-reference",
+            "excerpt": "visual reference"
+          }
+        ]
+      },
+      "source_refs": [
+        {
+          "source_file": "ПЗ_планирование_закупок_BPMN_эталон.drawio",
+          "section": "Page-1",
+          "locator": "external-reference",
+          "excerpt": "visual reference"
+        }
+      ]
+    },
+    {
+      "id": "PART_NEXT",
+      "name": "Закупки",
+      "participant_kind": "external_process",
+      "black_box": true,
+      "linked_process": {
+        "id": "purchases",
+        "uri": null,
+        "source_refs": [
+          {
+            "source_file": "ПЗ_планирование_закупок_BPMN_эталон.drawio",
+            "section": "Page-1",
+            "locator": "external-reference",
+            "excerpt": "visual reference"
+          }
+        ]
+      },
+      "source_refs": [
+        {
+          "source_file": "ПЗ_планирование_закупок_BPMN_эталон.drawio",
+          "section": "Page-1",
+          "locator": "external-reference",
+          "excerpt": "visual reference"
+        }
+      ]
+    }
+  ],
+  "message_flows": [
+    {
+      "id": "MF_PREV",
+      "source": "PART_PREV",
+      "target": "START",
+      "name": "Потребность",
+      "source_refs": [
+        {
+          "source_file": "ПЗ_планирование_закупок_BPMN_эталон.drawio",
+          "section": "Page-1",
+          "locator": "external-reference",
+          "excerpt": "visual reference"
+        }
+      ]
+    },
+    {
+      "id": "MF_NEXT",
+      "source": "CALL",
+      "target": "PART_NEXT",
+      "name": "Утверждённый план",
+      "source_refs": [
+        {
+          "source_file": "ПЗ_планирование_закупок_BPMN_эталон.drawio",
+          "section": "Page-1",
+          "locator": "external-reference",
+          "excerpt": "visual reference"
+        }
+      ]
+    }
+  ],
+  "annotations": [
+    {
+      "id": "ANN1",
+      "text": "Роли и системы представлены overlays",
+      "attached_to": null,
+      "source_refs": [
+        {
+          "source_file": "ПЗ_планирование_закупок_BPMN_эталон.drawio",
+          "section": "Page-1",
+          "locator": "external-reference",
+          "excerpt": "visual reference"
+        }
+      ]
+    }
+  ],
+  "systems": [
+    "1С:ERP УХ"
+  ],
+  "documents": [],
+  "functional_gaps": [],
+  "open_questions": [],
+  "information_gaps": [
+    {
+      "id": "GAP.OWNER.SRV",
+      "step_id": "SRV",
+      "missing_information": "Ответственный владелец автоматического расчёта",
+      "diagram_impact": "Human role overlay не создаётся до подтверждения владельца.",
+      "customer_question": "Кто отвечает за автоматический расчёт потребности?",
+      "status": "OPEN",
+      "severity": "medium"
+    },
+    {
+      "id": "GAP.OWNER.REPORT",
+      "step_id": "REPORT",
+      "missing_information": "Ответственный владелец автоматического отчёта",
+      "diagram_impact": "Human role overlay не создаётся до подтверждения владельца.",
+      "customer_question": "Кто отвечает за автоматическое формирование отчёта?",
+      "status": "OPEN",
+      "severity": "medium"
+    },
+    {
+      "id": "GAP.OWNER.CALL",
+      "step_id": "CALL",
+      "missing_information": "Ответственный владелец вызываемого процесса",
+      "diagram_impact": "Human role overlay не создаётся до подтверждения владельца.",
+      "customer_question": "Кто является владельцем вызываемого процесса закупок?",
+      "status": "OPEN",
+      "severity": "medium"
+    }
+  ],
+  "warnings": []
+}

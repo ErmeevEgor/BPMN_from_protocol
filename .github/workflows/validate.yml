@@ -1,0 +1,39 @@
+name: Validate portable skill
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  clean-room:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python-version: ["3.11", "3.13"]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: vendor/bpmn-diagrams/scripts/node/package-lock.json
+      - name: Install Python dependencies
+        run: python -m pip install -r scripts/requirements.txt
+      - name: Install locked Node dependencies
+        run: npm ci --prefix vendor/bpmn-diagrams/scripts/node
+      - name: Check runtime
+        run: python scripts/check_runtime.py --require bpmn
+      - name: Run clean-room smoke test
+        run: python tests/smoke_test.py
+      - name: Audit production Node dependencies
+        run: npm audit --omit=dev --audit-level=high --prefix vendor/bpmn-diagrams/scripts/node

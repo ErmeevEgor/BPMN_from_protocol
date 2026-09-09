@@ -1,0 +1,10 @@
+{
+  "extends": "bpmnlint:recommended",
+  "rules": {
+    "label-required": "error",
+    "no-implicit-split": "error",
+    "no-inclusive-gateway": "off",
+    "no-complex-gateway": "off",
+    "no-bpmndi": "off"
+  }
+}

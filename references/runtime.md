@@ -1,0 +1,46 @@
+# Runtime and cross-agent usage
+
+The package uses the common `SKILL.md` directory format. Point an agent to
+the directory or install/copy it into that host's skill location. Automatic
+discovery is host-specific; the workflow and Python scripts are not tied to
+an LLM vendor. Read the packaged `README.md` for installation examples.
+
+## Required runtime
+
+- Python 3.11+.
+- For requested BPMN: Node.js 18+ and `npm ci` in
+  `vendor/bpmn-diagrams/scripts/node`; `node_modules` is not packaged.
+- Packages from `scripts/requirements.txt`.
+- `.docx`: `python-docx`; `.pdf`: `pdfplumber`; `.xlsx`/`.xlsm`: `openpyxl`.
+- Legacy binary `.doc`: local LibreOffice for conversion.
+
+Check the host before modeling:
+
+```text
+python scripts/check_runtime.py
+```
+
+`scripts/setup_runtime.py` prints dependency installation commands and changes
+nothing unless the user explicitly runs it with `--install`.
+
+Editable `.drawio` does not require draw.io Desktop. Draw.io PNG export and
+strict actual-SVG route validation use a configured draw.io Desktop CLI. The
+bpmn-js PNG is rasterized from its saved SVG by the vendor Node stack. If
+draw.io Desktop is missing, preserve `.drawio`, skip its PNG, and report
+`NEEDS_REVIEW`; never discard the candidate. OCR is not automatic.
+
+The canonical model must be normalized to schema 2.1 and pass semantic
+validation before registry or rendering. The portable package is assembled
+by `scripts/sync_portable_skill.py`; never hand-maintain mapped copies.
+
+`run_pipeline.py` renders artifacts and produces `NEEDS_REVIEW` until a
+separate review is recorded. Inspect the generated PNG, then run:
+
+```text
+python scripts/post_render_review.py <process-id> --workspace <workspace> --status PASS --reviewer <name>
+python scripts/build_validation_report.py <workspace>/output/models/<process-id>-model.json --workspace <workspace>
+```
+
+The review file is bound to SHA-256 hashes of the current draw.io and PNG. If
+BPMN was requested it is also bound to the `.bpmn` and its actual bpmn-js
+SVG/PNG. A new render invalidates the old review automatically.

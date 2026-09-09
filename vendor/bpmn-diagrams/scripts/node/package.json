@@ -1,0 +1,19 @@
+{
+  "name": "opp-bpmn-render",
+  "version": "0.1.0",
+  "private": true,
+  "description": "OPP: рендер BPMN 2.0 XML → SVG через bpmn-js в headless jsdom (без chromium). Класс B1.",
+  "bin": {
+    "opp-render-bpmn": "./render_bpmn.js"
+  },
+  "scripts": {
+    "render": "node render_bpmn.js"
+  },
+  "dependencies": {
+    "bpmn-js": "^18.8.0",
+    "bpmn-moddle": "^10.0.0",
+    "bpmnlint": "^11.12.1",
+    "jsdom": "^25.0.1",
+    "sharp": "^0.35.4"
+  }
+}
