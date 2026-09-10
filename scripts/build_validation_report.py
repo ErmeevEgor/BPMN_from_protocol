@@ -93,8 +93,12 @@ def build(
         f"Post-render review: {result['post_render_review_status']}",
         f"Post-render review validity: {'PASS' if result['post_render_review_valid'] else 'NEEDS_REVIEW'}",
         f"Post-render review note: {result['post_render_review_reason']}",
-        "Model errors:",
+        "", "Проверки профиля, выполненные на этом уровне:",
     ]
+    lines.extend(f"- {item}" for item in quality_profile["checks"])
+    lines.extend(["", "Проверки, намеренно не выполнявшиеся на этом уровне:"])
+    lines.extend(f"- {item}" for item in quality_profile["deferred_checks"] or ["none"])
+    lines.extend(["", "Model errors:"])
     lines.extend(f"- {item}" for item in model_errors or ["none"])
     lines.extend(["", "Model warnings:"])
     lines.extend(f"- {item}" for item in model_warnings or ["none"])

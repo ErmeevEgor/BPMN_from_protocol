@@ -116,6 +116,42 @@ the first semantically valid candidate before extended polishing. If the
 best valid candidate with `NEEDS_REVIEW`; never consume the run and return no
 artifact.
 
+## Comparing L1, L2, and L3 in one request
+
+Treat a request for "three levels" as one modeling run with a validation
+ladder, not as three diagram-generation jobs:
+
+1. Extract the source once and create one canonical process model.
+2. Render the first semantically valid candidate and run the L1 checks. Record
+   the L1 checkpoint with zero corrections.
+3. Run the additional L2 checks against the same candidate. If they find no
+   defect, retain the same diagram revision. If they find a concrete defect,
+   record it, apply at most one targeted correction, rerun affected checks, and
+   record a new revision.
+4. Run the additional L3 checks against the current best revision. Create
+   another revision only after a recorded defect and an actual correction,
+   within the L3 correction budget.
+5. Preserve separate L1, L2, and L3 reports even when they all reference the
+   same diagram revision. Each report must list checks performed, checks
+   intentionally not performed, corrections used, status, and findings.
+
+After each level, run:
+
+```text
+python scripts/record_validation_level.py <process-id> --workspace <workspace> \
+  --quality-level <L1|L2|L3> --corrections <count>
+```
+
+The recorder rejects out-of-order levels, model-content drift, a claimed
+correction with unchanged diagram hashes, and changed diagrams with zero
+declared corrections. It stores one snapshot per genuinely distinct diagram
+revision plus level-specific reports and a comparison summary.
+
+Do not intentionally degrade L1, perturb layout to manufacture differences,
+or promise that three visual files will differ. The guaranteed difference is
+the evidence and depth of validation. Visual revisions differ only when a
+higher level finds and fixes a real defect.
+
 ## Shared stopping rules
 
 1. Extract the unchanged source once.

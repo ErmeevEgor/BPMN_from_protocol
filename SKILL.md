@@ -37,6 +37,17 @@ modeling granularity, artifact completeness, or requested formats. Do not omit,
 merge, or simplify a source-backed action, role, system, object, gateway,
 exception, transfer, input, or output to satisfy a faster level.
 
+If the user asks to compare all three levels, do not generate three independent
+models or three cosmetic copies. Extract and model once, render the first valid
+candidate once, then validate that same candidate sequentially as L1 -> L2 ->
+L3. Preserve a separate validation report for every level. Create a new diagram
+revision only when the higher level finds a recorded defect and the diagram is
+actually corrected; otherwise point the higher-level report to the existing
+revision. Use `scripts/record_validation_level.py` after each checkpoint to
+enforce stable model content, level order, report preservation, and hash-based
+revision deduplication. Read the multi-level section in
+[quality-levels.md](references/quality-levels.md) before this workflow.
+
 ## Workflow
 
 1. Resolve the supplied attachment/path and create an isolated writable workspace.

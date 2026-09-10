@@ -48,3 +48,17 @@ The review file is bound to SHA-256 hashes of the current draw.io and SVG. If
 BPMN was requested it is also bound to the `.bpmn` and its actual bpmn-js SVG.
 Optional PNG files are hashed only when they were explicitly requested. A new
 render invalidates the old review automatically.
+
+For a single request that compares L1, L2, and L3, keep one workspace and one
+canonical model. After completing and reporting each level, preserve its
+checkpoint with:
+
+```text
+python scripts/record_validation_level.py <process-id> --workspace <workspace> --quality-level <L1|L2|L3> --corrections <count>
+```
+
+Record the levels strictly as L1, then L2, then L3. The script deduplicates
+identical diagram revisions by SHA-256 and copies a new revision only when the
+deliverable diagram files changed after a declared correction. It also keeps
+level-specific copies of reports and writes a ladder manifest and Markdown
+comparison summary. The canonical model hash must stay unchanged.

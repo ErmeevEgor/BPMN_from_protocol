@@ -34,6 +34,11 @@ PROFILES = {
             "requested BPMN XML parse and BPMN-DI completeness",
             "quick full-SVG catastrophic-layout inspection",
         ],
+        "deferred_checks": [
+            "actual-SVG detailed geometry and connector audit",
+            "complete cross-format visual comparison",
+            "element-by-element and regression-aware audit",
+        ],
     },
     "L2": {
         "name": "Standard validation",
@@ -49,6 +54,10 @@ PROFILES = {
             "edge, label, role, system, and artifact placement",
             "requested BPMN XML and BPMN-DI visual validation",
             "one complete draw.io and bpmn-js preview inspection",
+        ],
+        "deferred_checks": [
+            "element-by-element and regression-aware audit",
+            "second detail-scale inspection and extended typography/whitespace audit",
         ],
     },
     "L3": {
@@ -66,6 +75,7 @@ PROFILES = {
             "exhaustive connector, typography, whitespace, and artifact audit",
             "regression comparison when a reference case exists",
         ],
+        "deferred_checks": [],
     },
 }
 

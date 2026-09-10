@@ -1,8 +1,8 @@
 {
   "name": "bpmn-from-protocol",
-  "version": "0.1.0-rc.5",
+  "version": "0.1.0-rc.6",
   "status": "release-candidate",
-  "based_on_commit": "d472d54dadca7462d590c2b46454b3b45f8ee5bf",
+  "based_on_commit": "13e6bbed823fa447a21143aa6064224baa540ec1",
   "package_policy": {
     "tracked_files_only": true,
     "forbidden_directories": [
