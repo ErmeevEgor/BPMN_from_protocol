@@ -33,7 +33,8 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--model", required=True)
     parser.add_argument("--workspace", required=True)
-    parser.add_argument("--no-png", action="store_true")
+    parser.add_argument("--png", action="store_true", help="Also export legacy PNG previews")
+    parser.add_argument("--no-png", action="store_true", help=argparse.SUPPRESS)
     parser.add_argument("--bpmn", action="store_true")
     parser.add_argument("--quality-level", default="L2", choices=("L1", "L2", "L3"),
                         help="Validation depth only; model completeness is identical at every level")
@@ -69,8 +70,8 @@ def main() -> int:
         sys.executable, str(SCRIPTS / "render_diagram.py"), str(registry), process_id,
         "--model", str(canonical), "--quality-level", quality_level,
     ]
-    if args.no_png:
-        render.append("--no-png")
+    if args.png and not args.no_png:
+        render.append("--png")
     code = run(render, workspace)
     if code:
         return code
@@ -91,15 +92,25 @@ def main() -> int:
             return code
         if quality_level != "L1":
             bpmn_svg = workspace / "output/bpmn-preview" / f"{process_id}.svg"
-            bpmn_png = workspace / "output/bpmn-preview" / f"{process_id}.png"
-            code = run([sys.executable, str(SCRIPTS / "render_bpmn.py"), str(bpmn), str(bpmn_svg), str(bpmn_png)], workspace)
+            render_bpmn_command = [
+                sys.executable, str(SCRIPTS / "render_bpmn.py"), str(bpmn), str(bpmn_svg),
+            ]
+            if args.png and not args.no_png:
+                bpmn_png = workspace / "output/bpmn-preview" / f"{process_id}.png"
+                render_bpmn_command.append(str(bpmn_png))
+            code = run(render_bpmn_command, workspace)
             if code:
                 return code
-            code = run([
+            validate_command = [
                 sys.executable, str(SCRIPTS / "validate_bpmn_di.py"), str(bpmn), "--model", str(canonical),
-                "--svg", str(bpmn_svg), "--png", str(bpmn_png), "--report",
+                "--svg", str(bpmn_svg), "--report",
                 str(workspace / "output/validation" / f"{process_id}-bpmn-di-validation.json"),
-            ], workspace)
+            ]
+            if bpmn_png is not None:
+                validate_command[validate_command.index("--report"):validate_command.index("--report")] = [
+                    "--png", str(bpmn_png)
+                ]
+            code = run(validate_command, workspace)
             if code:
                 return code
     model = json.loads(canonical.read_text(encoding="utf-8"))
@@ -112,7 +123,8 @@ def main() -> int:
         "information_gaps": str(workspace / "output/registries" / f"{process_id}-information-gaps.md"),
         "render_meta": str(workspace / "output/registries" / f"{process_id}-render-meta.json"),
         "drawio": str(workspace / "output/drawio" / f"{process_id}.drawio"),
-        "png": str(workspace / "output/preview" / f"{process_id}.png"),
+        "svg": str(workspace / "output/preview" / f"{process_id}.svg"),
+        "png": str(workspace / "output/preview" / f"{process_id}.png") if args.png and not args.no_png else None,
         "bpmn": str(bpmn) if bpmn else None,
         "bpmn_svg": str(bpmn_svg) if bpmn_svg else None,
         "bpmn_png": str(bpmn_png) if bpmn_png else None,

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Рендер .drawio (+ PNG) из BPMN Lite registry с корпоративным постпроцессингом
+Рендер .drawio + SVG из BPMN Lite registry с корпоративным постпроцессингом
 (TZ_DELTA_CORPORATE_BPMN.md).
 
 Конвейер:
@@ -9,10 +9,11 @@
      передал "Система"/"Результат"/"Вход" в реестр).
   2. scripts/diagram_layout.py         → Pool→Lane→Task hierarchy, system
      label под Task (font 8), артефакты под Task, explicit ports/waypoints.
-  3. scripts/validate_drawio.py        → корпоративный validator. ERROR
-     блокирует PNG (раздел 40.10-11 дельта-ТЗ).
-  4. При PASS — PNG через локальный draw.io CLI (config/tooling.json),
-     НЕ через установку/скачивание (раздел 32 дельта-ТЗ).
+  3. draw.io CLI                       → полный SVG без растровой обрезки.
+  4. scripts/validate_drawio.py        → корпоративный validator. ERROR
+     блокирует публикацию SVG (раздел 40.10-11 дельта-ТЗ).
+
+PNG сохранён только как явно запрашиваемый legacy-экспорт.
 
 Не переписывает bpmn-diagrams (раздел 10 ТЗ) — только адаптер путей и
 постобработка XML, которую bpmn-diagrams не поддерживает нативно.
@@ -55,7 +56,7 @@ def external_utf8_env() -> dict:
 
 
 def mark_visual_review_required(process_id: str, reason: str) -> None:
-    """Downgrade structural PASS when actual SVG/PNG inspection was unavailable."""
+    """Downgrade structural PASS when actual SVG inspection was unavailable."""
     validation_dir = Path("output/validation")
     json_path = validation_dir / f"{process_id}-drawio-validation.json"
     md_path = validation_dir / f"{process_id}-drawio-validation.md"
@@ -128,8 +129,8 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("registry_path", help="Путь к <process-id>-registry.md")
     parser.add_argument("process_id", help="Идентификатор процесса для имени выходных файлов")
-    parser.add_argument("--png", action="store_true", default=True, help="Экспортировать PNG (по умолчанию включено)")
-    parser.add_argument("--no-png", dest="png", action="store_false")
+    parser.add_argument("--png", action="store_true", help="Дополнительно экспортировать legacy PNG")
+    parser.add_argument("--no-png", dest="png", action="store_false", help=argparse.SUPPRESS)
     parser.add_argument("--model", help="Путь к process_model.json (по умолчанию output/models/<id>-model.json)")
     parser.add_argument("--quality-level", default="L2", choices=("L1", "L2", "L3"),
                         help="Validation depth only; never changes model contents")
@@ -187,26 +188,26 @@ def main():
             Path("output/drawio").mkdir(parents=True, exist_ok=True)
             dest_drawio = Path("output/drawio") / f"{args.process_id}.drawio"
             shutil.copy(layouted, dest_drawio)
-            reason = "draw.io CLI не найден; фактические SVG-маршруты и PNG не проверены"
+            reason = "draw.io CLI не найден; SVG-предпросмотр и фактические SVG-маршруты не проверены"
             mark_visual_review_required(args.process_id, reason)
             print(f"drawio: {dest_drawio}")
             print(f"NEEDS_REVIEW: {reason}", file=sys.stderr)
             shutil.rmtree(tmp_outdir, ignore_errors=True)
             return
+        rendered_svg = tmp_outdir / "layout_applied.svg"
+        svg_result = subprocess.run(
+            [drawio_cli, *DRAWIO_STABLE_SCALE_FLAGS, "--export", "--format", "svg", "--embed-diagram",
+             "--border", "10", "--size", "page",
+             "--output", str(rendered_svg.resolve()), str(layouted.resolve())],
+            capture_output=True, text=True, encoding="utf-8", errors="replace",
+        )
+        if svg_result.returncode != 0 or not rendered_svg.is_file() or rendered_svg.stat().st_size == 0:
+            print(f"SVG_EXPORT_REQUIRED: export failed ({svg_result.returncode})\n{svg_result.stderr}",
+                  file=sys.stderr)
+            sys.exit(1)
         validate_cmd = [py, str(SCRIPTS_DIR / "validate_drawio.py"), str(layouted), str(render_meta_path),
                         str(model_path)]
         if quality_profile["actual_svg_geometry"]:
-            rendered_svg = tmp_outdir / "layout_applied.svg"
-            svg_result = subprocess.run(
-                [drawio_cli, *DRAWIO_STABLE_SCALE_FLAGS, "--export", "--format", "svg", "--embed-diagram",
-                 "--border", "10", "--size", "page",
-                 "--output", str(rendered_svg.resolve()), str(layouted.resolve())],
-                capture_output=True, text=True, encoding="utf-8", errors="replace",
-            )
-            if svg_result.returncode != 0 or not rendered_svg.is_file():
-                print(f"SVG_ROUTE_VALIDATION_REQUIRED: export failed ({svg_result.returncode})\n{svg_result.stderr}",
-                      file=sys.stderr)
-                sys.exit(1)
             validate_cmd.extend(["--svg", str(rendered_svg)])
         result = subprocess.run(validate_cmd, capture_output=True, text=True, encoding="utf-8", errors="replace")
         print(result.stdout)
@@ -227,6 +228,10 @@ def main():
         dest_drawio = Path("output/drawio") / f"{args.process_id}.drawio"
         shutil.copy(layouted, dest_drawio)
         print(f"drawio: {dest_drawio}")
+        Path("output/preview").mkdir(parents=True, exist_ok=True)
+        dest_svg = Path("output/preview") / f"{args.process_id}.svg"
+        shutil.copy(rendered_svg, dest_svg)
+        print(f"svg: {dest_svg}")
         if args.png:
             if drawio_cli:
                 Path("output/preview").mkdir(parents=True, exist_ok=True)
@@ -286,7 +291,7 @@ def main():
     validator_passed = result.returncode == 0
 
     # --- Атомарная публикация (раздел 28 TZ_PRODUCTION_BPMN_RUNNER.md):
-    # старый рабочий .drawio/PNG НЕ удаляется и НЕ перезаписывается, пока
+    # старые рабочие .drawio/SVG НЕ удаляются и НЕ перезаписываются, пока
     # новая версия не прошла corporate validator. При FAIL — сохранить
     # неудачную попытку отдельно для диагностики, опубликованная версия
     # остаётся прежней. ---
@@ -306,15 +311,26 @@ def main():
     shutil.copy(layouted, dest_drawio)
     print(f"drawio: {dest_drawio}")
 
-    # --- 4. PNG через локальный draw.io CLI ---
-    if args.png:
-        drawio_cli = find_drawio_cli(Path.cwd())
-        if not drawio_cli:
-            reason = "draw.io CLI не найден; PNG и фактическая SVG-проверка недоступны"
-            mark_visual_review_required(args.process_id, reason)
-            print(f"NEEDS_REVIEW: {reason}. Автоматическая установка не выполняется.", file=sys.stderr)
+    # --- 4. SVG через локальный draw.io CLI; PNG — только по явному запросу ---
+    drawio_cli = find_drawio_cli(Path.cwd())
+    if not drawio_cli:
+        reason = "draw.io CLI не найден; SVG-предпросмотр недоступен"
+        mark_visual_review_required(args.process_id, reason)
+        print(f"NEEDS_REVIEW: {reason}. Автоматическая установка не выполняется.", file=sys.stderr)
+    else:
+        Path("output/preview").mkdir(parents=True, exist_ok=True)
+        dest_svg = Path("output/preview") / f"{args.process_id}.svg"
+        export_svg_cmd = [drawio_cli, *DRAWIO_STABLE_SCALE_FLAGS, "--export", "--format", "svg",
+                          "--embed-diagram", "--border", "10", "--size", "page",
+                          "--output", str(dest_svg), str(dest_drawio)]
+        result = subprocess.run(export_svg_cmd, capture_output=True, text=True, encoding="utf-8", errors="replace")
+        if result.returncode == 0 and dest_svg.exists() and dest_svg.stat().st_size > 0:
+            print(f"svg: {dest_svg}")
         else:
-            Path("output/preview").mkdir(parents=True, exist_ok=True)
+            reason = f"SVG export failed (exit={result.returncode})"
+            mark_visual_review_required(args.process_id, reason)
+            print(f"SVG_EXPORT_UNAVAILABLE: {reason}\n{result.stderr}", file=sys.stderr)
+        if args.png:
             dest_png = Path("output/preview") / f"{args.process_id}.png"
             # --size page (не default "diagram"): у draw.io Desktop 31.1.8 обнаружен баг
             # export'а PNG/SVG в режиме "diagram" — контент правее ~3600-3700 единиц

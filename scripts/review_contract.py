@@ -40,7 +40,8 @@ def critical_unresolved(model: dict) -> list[str]:
     return blockers
 
 
-def _valid_post_render_review(review_path: Path, drawio: Path, png: Path,
+def _valid_post_render_review(review_path: Path, drawio: Path, svg: Path,
+                              png: Path | None = None,
                               bpmn: Path | None = None, bpmn_svg: Path | None = None,
                               bpmn_png: Path | None = None) -> tuple[bool, str, dict]:
     if not review_path.is_file():
@@ -51,12 +52,16 @@ def _valid_post_render_review(review_path: Path, drawio: Path, png: Path,
         return False, f"post-render review не читается: {exc}", {}
     if review.get("status") != "PASS":
         return False, f"post-render review status={review.get('status', 'UNKNOWN')}", review
-    if not drawio.is_file() or not png.is_file():
+    if not drawio.is_file() or not svg.is_file():
         return False, "артефакты для post-render review отсутствуют", review
     hashes = review.get("artifact_sha256") or {}
-    artifacts = {"drawio": drawio, "png": png}
+    artifacts = {"drawio": drawio, "svg": svg}
+    if "png" in hashes:
+        artifacts["png"] = png
     if bpmn is not None and bpmn.is_file():
-        artifacts.update({"bpmn": bpmn, "bpmn_svg": bpmn_svg, "bpmn_png": bpmn_png})
+        artifacts.update({"bpmn": bpmn, "bpmn_svg": bpmn_svg})
+        if "bpmn_png" in hashes:
+            artifacts["bpmn_png"] = bpmn_png
     if any(path is None or not path.is_file() or hashes.get(name) != sha256(path)
            for name, path in artifacts.items()):
         return False, "post-render review относится к другой версии артефактов", review
@@ -77,13 +82,14 @@ def evaluate(workspace: Path, model: dict, process_id: str) -> dict:
         technical = json.loads(drawio_validation.read_text(encoding="utf-8"))
     technical_status = technical.get("status", "NOT_RUN")
     drawio = workspace / "output" / "drawio" / f"{process_id}.drawio"
+    svg = workspace / "output" / "preview" / f"{process_id}.svg"
     png = workspace / "output" / "preview" / f"{process_id}.png"
     bpmn = workspace / "output" / "bpmn" / f"{process_id}.bpmn"
     bpmn_svg = workspace / "output" / "bpmn-preview" / f"{process_id}.svg"
     bpmn_png = workspace / "output" / "bpmn-preview" / f"{process_id}.png"
     review_path = validation_dir / f"{process_id}-post-render-review.json"
     review_valid, review_reason, review = _valid_post_render_review(
-        review_path, drawio, png, bpmn, bpmn_svg, bpmn_png)
+        review_path, drawio, svg, png, bpmn, bpmn_svg, bpmn_png)
     critical = critical_unresolved(model)
     if technical_status != "PASS":
         overall = "FAIL"

@@ -32,7 +32,7 @@ PROFILES = {
             "source traceability and ROLE != SYSTEM",
             "draw.io XML structure and basic endpoint references",
             "requested BPMN XML parse and BPMN-DI completeness",
-            "quick full-PNG catastrophic-layout inspection",
+            "quick full-SVG catastrophic-layout inspection",
         ],
     },
     "L2": {

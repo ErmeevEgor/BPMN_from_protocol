@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Record a human/agent visual decision only after draw.io and PNG exist."""
+"""Record a human/agent visual decision only after draw.io and SVG exist."""
 from __future__ import annotations
 
 import argparse
@@ -46,15 +46,18 @@ def main() -> int:
     quality_level = normalize_quality_level(args.quality_level)
     workspace = Path(args.workspace).resolve()
     drawio = workspace / "output" / "drawio" / f"{args.process_id}.drawio"
+    svg = workspace / "output" / "preview" / f"{args.process_id}.svg"
     png = workspace / "output" / "preview" / f"{args.process_id}.png"
     technical_path = workspace / "output" / "validation" / f"{args.process_id}-drawio-validation.json"
     bpmn = workspace / "output" / "bpmn" / f"{args.process_id}.bpmn"
     bpmn_svg = workspace / "output" / "bpmn-preview" / f"{args.process_id}.svg"
     bpmn_png = workspace / "output" / "bpmn-preview" / f"{args.process_id}.png"
     bpmn_validation_path = workspace / "output" / "validation" / f"{args.process_id}-bpmn-di-validation.json"
-    required = [drawio, png, technical_path]
+    required = [drawio, svg, technical_path]
     if bpmn.is_file():
-        required.extend([bpmn_svg, bpmn_png, bpmn_validation_path])
+        required.append(bpmn_svg)
+        if quality_level != "L1":
+            required.append(bpmn_validation_path)
     missing = [str(path) for path in required if not path.is_file()]
     if missing:
         print("POST_RENDER_REVIEW_BEFORE_RENDER_FORBIDDEN: " + ", ".join(missing), file=sys.stderr)
@@ -63,14 +66,18 @@ def main() -> int:
     if technical.get("status") != "PASS":
         print("POST_RENDER_REVIEW_REQUIRES_TECHNICAL_PASS", file=sys.stderr)
         return 2
-    if bpmn.is_file():
+    if bpmn.is_file() and quality_level != "L1":
         bpmn_technical = json.loads(bpmn_validation_path.read_text(encoding="utf-8"))
         if bpmn_technical.get("status") != "PASS":
             print("POST_RENDER_REVIEW_REQUIRES_BPMN_DI_PASS", file=sys.stderr)
             return 2
-    hashes = {"drawio": sha256(drawio), "png": sha256(png)}
+    hashes = {"drawio": sha256(drawio), "svg": sha256(svg)}
+    if png.is_file():
+        hashes["png"] = sha256(png)
     if bpmn.is_file():
-        hashes.update({"bpmn": sha256(bpmn), "bpmn_svg": sha256(bpmn_svg), "bpmn_png": sha256(bpmn_png)})
+        hashes.update({"bpmn": sha256(bpmn), "bpmn_svg": sha256(bpmn_svg)})
+        if bpmn_png.is_file():
+            hashes["bpmn_png"] = sha256(bpmn_png)
     payload = {
         "process_id": args.process_id,
         "status": args.status,

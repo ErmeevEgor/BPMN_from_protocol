@@ -48,8 +48,8 @@ def inspect(workspace: Path | None = None) -> dict:
     base_ready = python_ok
     all_extractors = all(packages.values())
     bpmn_ready = base_ready and bool(node) and bpmn_modules.is_file()
-    png_ready = base_ready and bool(drawio)
-    status = "READY_FULL" if all_extractors and bpmn_ready and png_ready else "READY_BASE" if base_ready else "NOT_READY"
+    svg_ready = base_ready and bool(drawio)
+    status = "READY_FULL" if all_extractors and bpmn_ready and svg_ready else "READY_BASE" if base_ready else "NOT_READY"
     return {
         "status": status,
         "python": {"executable": sys.executable, "version": sys.version.split()[0], "ok": python_ok},
@@ -63,7 +63,7 @@ def inspect(workspace: Path | None = None) -> dict:
             "source_extraction": base_ready,
             "all_document_extractors": all_extractors,
             "drawio_generation": base_ready,
-            "drawio_png_and_svg_validation": png_ready,
+            "drawio_svg_and_validation": svg_ready,
             "bpmn_xml_and_preview": bpmn_ready,
         },
         "supported_extensions": SUPPORTED_EXTENSIONS,
@@ -74,7 +74,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--workspace", type=Path)
     parser.add_argument("--json", action="store_true")
-    parser.add_argument("--require", choices=("base", "png", "bpmn", "full"))
+    parser.add_argument("--require", choices=("base", "svg", "png", "bpmn", "full"))
     args = parser.parse_args()
     result = inspect(args.workspace)
     if args.json:
@@ -86,11 +86,12 @@ def main() -> int:
             print(f"Python package {package}: {'PASS' if available else 'MISSING'}")
         print(f"Node.js: {result['node']['version'] or 'MISSING'}")
         print(f"bpmn-js dependencies: {'PASS' if result['bpmn_js_dependencies']['installed'] else 'MISSING'}")
-        print(f"draw.io CLI: {result['drawio_cli']['path'] or 'MISSING (draw.io remains deliverable; PNG is unavailable)'}")
+        print(f"draw.io CLI: {result['drawio_cli']['path'] or 'MISSING (draw.io remains deliverable; SVG preview is unavailable)'}")
         print(f"LibreOffice: {result['libreoffice']['path'] or 'MISSING (only legacy .doc is unavailable)'}")
     required = {
         "base": result["capabilities"]["source_extraction"],
-        "png": result["capabilities"]["drawio_png_and_svg_validation"],
+        "svg": result["capabilities"]["drawio_svg_and_validation"],
+        "png": result["capabilities"]["drawio_svg_and_validation"],
         "bpmn": result["capabilities"]["bpmn_xml_and_preview"],
         "full": result["status"] == "READY_FULL",
     }

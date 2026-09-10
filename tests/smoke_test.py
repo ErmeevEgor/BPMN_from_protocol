@@ -58,7 +58,7 @@ def main() -> int:
         model = workspace / "model.json"
         shutil.copy2(MODEL, model)
         run(str(ROOT / "scripts" / "run_pipeline.py"), "--model", str(model),
-            "--workspace", str(workspace), "--no-png", "--bpmn", cwd=workspace,
+            "--workspace", str(workspace), "--bpmn", cwd=workspace,
             env={"BPMN_DISABLE_DRAWIO": "1"})
         process_id = "corporate-purchase-planning"
         drawio = workspace / "output" / "drawio" / f"{process_id}.drawio"
@@ -66,6 +66,8 @@ def main() -> int:
         report_path = workspace / "output" / "validation" / f"{process_id}-drawio-validation.json"
         if not drawio.is_file() or not bpmn.is_file():
             raise RuntimeError("Expected draw.io/BPMN deliverables are missing")
+        if (workspace / "output" / "preview" / f"{process_id}.png").exists():
+            raise RuntimeError("PNG must not be generated unless explicitly requested")
         report = json.loads(report_path.read_text(encoding="utf-8"))
         if report.get("status") != "NEEDS_REVIEW":
             raise RuntimeError("Missing draw.io CLI must produce NEEDS_REVIEW")

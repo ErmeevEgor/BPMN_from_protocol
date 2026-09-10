@@ -35,6 +35,7 @@ def build(
     human_roles = [step for step in activities if step.get("performer_kind") == "human"]
     model_errors, model_warnings = validate_semantics(model)
     bpmn = workspace / "output" / "bpmn" / f"{process_id}.bpmn"
+    svg = workspace / "output" / "preview" / f"{process_id}.svg"
     png = workspace / "output" / "preview" / f"{process_id}.png"
     xml_validation_path = workspace / "output" / "validation" / f"{process_id}-bpmn-xml-validation.json"
     xml_validation = json.loads(xml_validation_path.read_text(encoding="utf-8")) if xml_validation_path.is_file() else {}
@@ -85,7 +86,8 @@ def build(
         f"BPMN semantics gate: {model_status}",
         f"Corporate notation gate: {corporate_status}",
         f"Geometry gate: {geometry_status}",
-        f"PNG: {'PASS' if png.is_file() else 'SKIPPED'}",
+        f"SVG: {'PASS' if svg.is_file() else 'SKIPPED'}",
+        f"PNG (legacy, optional): {'PASS' if png.is_file() else 'SKIPPED'}",
         f"BPMN 2.0 XML gate: {xml_status}",
         f"BPMN-DI visual gate: {di_status}",
         f"Post-render review: {result['post_render_review_status']}",

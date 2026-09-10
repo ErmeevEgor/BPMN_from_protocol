@@ -2,7 +2,7 @@
 name: bpmn-from-protocol
 description: >-
   Create editable BPMN process diagrams from an attached file, local path,
-  or pasted protocol text when draw.io, PNG, or BPMN 2.0 XML is requested.
+  or pasted protocol text when draw.io, SVG, or BPMN 2.0 XML is requested.
   Not for UML, ER diagrams, charts, or timelines.
 ---
 
@@ -53,14 +53,15 @@ exception, transfer, input, or output to satisfy a faster level.
    `build_registry.py` for the deterministic renderer.
 7. Run `scripts/run_pipeline.py --model <model> --workspace <workspace>
    --quality-level <L1|L2|L3>`;
-   add `--bpmn` when BPMN XML is requested. Use `--no-png` only when PNG was
-   not requested. If draw.io Desktop is unavailable, preserve the editable
+   add `--bpmn` when BPMN XML is requested. SVG is the default preview; add
+   `--png` only when the user explicitly requests the legacy raster format.
+   If draw.io Desktop is unavailable, preserve the editable
    draw.io candidate and report `NEEDS_REVIEW` instead of failing the run.
    The `--bpmn` path must publish BPMN-DI from the final draw.io geometry,
    render it through bpmn-js, and pass the independent BPMN-DI visual gate.
 8. Apply the selected level's validation and correction budget. When SVG
    validation is required, use the SVG exported from the same draw.io
-   candidate. Inspect the complete PNG at a readable scale.
+   candidate. Inspect the complete SVG at overview and readable detail scales.
 9. Only after the inspection required by the selected level, record the
    decision with `scripts/post_render_review.py <id> --workspace <workspace>
    --quality-level <L1|L2|L3> --status PASS|FAIL --reviewer <name>`. At L1,
@@ -133,7 +134,8 @@ exception, transfer, input, or output to satisfy a faster level.
 - Do not store `visual_review` in the model or predeclare it before render.
   Critical OPEN/ASSUMPTION items force `NEEDS_REVIEW`; overall `PASS` requires
   a separate hash-bound post-render review. For BPMN requests the hashes also
-  include the `.bpmn` and its bpmn-js SVG/PNG.
+  include the `.bpmn` and its bpmn-js SVG. Include optional PNG hashes only
+  when the user explicitly requested PNG.
 - Split processes above 22 Tasks into an overview and readable detailed
   subprocess diagrams. Use Task geometry 120–160 × 70–90 and a 14–16 px marker.
 - Never preserve legacy `source_status` after normalization.

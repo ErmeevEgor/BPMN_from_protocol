@@ -19,7 +19,7 @@ The following contract is identical at L1, L2, and L3:
 - preserve all confirmed routes and meaningful exceptions from the source;
 - never invent a missing fact; record it in `information_gaps`;
 - build the same schema-2.1 model and all formats requested by the user,
-  including draw.io, PNG, and BPMN 2.0 XML with BPMN-DI when requested;
+  including draw.io, SVG, and BPMN 2.0 XML with BPMN-DI when requested;
 - always run schema, source-traceability, ROLE != SYSTEM, and graph-validity
   checks before rendering.
 
@@ -57,7 +57,7 @@ Run:
 - draw.io XML/structure validation and basic endpoint/reference checks;
 - XML parse, BPMN semantic references, and BPMN-DI completeness when BPMN is
   requested;
-- one quick inspection of the complete PNG for catastrophic clipping, an empty
+- one quick inspection of the complete SVG for catastrophic clipping, an empty
   render, or an unreadable overall layout.
 
 Do not run a correction cycle. Actual-SVG geometric auditing, exhaustive
@@ -83,7 +83,7 @@ Run everything in L1, plus:
   role/system/artifact placement, and artifact-to-Activity attachment;
 - BPMN XML and BPMN-DI validation plus one complete bpmn-js preview inspection
   when BPMN is requested;
-- one full visual inspection of the draw.io PNG and cross-format comparison of
+- one full visual inspection of the draw.io SVG and cross-format comparison of
   the main node/flow/artifact coverage.
 
 Allow no more than one targeted correction. It must address named validator
