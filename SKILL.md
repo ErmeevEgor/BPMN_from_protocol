@@ -21,19 +21,21 @@ read [process-model-schema.md](references/process-model-schema.md) and enforce
 
 Choose one level before modeling and state it in the first progress update:
 
-- **L1 — Express draft**: fastest structural draft for discussion.
-- **L2 — Working diagram**: normal operational detail and the default when the
-  user does not specify a level.
-- **L3 — Audit-ready diagram**: deeper source coverage and stricter review for
-  a regulation, acceptance, or reference artifact.
+- **L1 — Basic validation**: complete model and requested files with only
+  structural usability checks and no visual correction round.
+- **L2 — Standard validation**: the default working workflow, with actual-SVG
+  geometry checks, one full visual inspection, and at most one targeted fix.
+- **L3 — Extended validation**: the same complete model under exhaustive,
+  cross-format, regression-aware review and up to three targeted fixes.
 
 Infer an explicit request such as `быстро`, `рабочая схема`, or `аудитная`
 without asking a follow-up question. A plain request to create a diagram uses
 L2. Read [quality-levels.md](references/quality-levels.md) after selecting the
-level and follow its scope, validation, correction, and stopping budget.
-Quality level changes depth and review effort, never BPMN truth: source
-traceability, ROLE != SYSTEM, valid graph semantics, and explicit information
-gaps remain mandatory at every level.
+level and follow its validation, correction, and stopping budget. Quality
+level changes validation effort only. It never changes source coverage,
+modeling granularity, artifact completeness, or requested formats. Do not omit,
+merge, or simplify a source-backed action, role, system, object, gateway,
+exception, transfer, input, or output to satisfy a faster level.
 
 ## Workflow
 
@@ -49,7 +51,8 @@ gaps remain mandatory at every level.
 6. Build both registries plus `information-gaps.md`: use
    `build_semantic_registry.py`, `build_information_gaps.py`, and
    `build_registry.py` for the deterministic renderer.
-7. Run `scripts/run_pipeline.py --model <model> --workspace <workspace>`;
+7. Run `scripts/run_pipeline.py --model <model> --workspace <workspace>
+   --quality-level <L1|L2|L3>`;
    add `--bpmn` when BPMN XML is requested. Use `--no-png` only when PNG was
    not requested. If draw.io Desktop is unavailable, preserve the editable
    draw.io candidate and report `NEEDS_REVIEW` instead of failing the run.
@@ -58,14 +61,19 @@ gaps remain mandatory at every level.
 8. Apply the selected level's validation and correction budget. When SVG
    validation is required, use the SVG exported from the same draw.io
    candidate. Inspect the complete PNG at a readable scale.
-9. Only after inspection, record the decision with
-   `scripts/post_render_review.py <id> --workspace <workspace> --status PASS|FAIL --reviewer <name>`.
+9. Only after the inspection required by the selected level, record the
+   decision with `scripts/post_render_review.py <id> --workspace <workspace>
+   --quality-level <L1|L2|L3> --status PASS|FAIL --reviewer <name>`. At L1,
+   do not fabricate a full visual PASS when only the quick catastrophic-layout
+   inspection was performed; return `NEEDS_REVIEW` with deferred findings.
 10. Rebuild the final report with `scripts/build_validation_report.py` and
     return direct links to requested artifacts plus validation results.
 
 ## Invariants
 
 - Protocol decisions and scenario are the source of business truth.
+- Model completeness and requested formats are identical at L1, L2, and L3;
+  only validation depth and correction effort differ.
 - The current white-box Process has no internal Lane. Human roles and systems
   are per-Activity overlays; overlays are never Flow Nodes.
 - `system` names one execution system; devices/interfaces belong in
@@ -131,6 +139,8 @@ gaps remain mandatory at every level.
 - Never preserve legacy `source_status` after normalization.
 - Do not combine different actions, roles, systems, controls, alternatives,
   knowledge statuses, or source requirements into one Activity.
+- Never impose an Activity-count target or omit content because a faster
+  quality level was selected.
 - Follow [corporate-bpmn-standard.md](references/corporate-bpmn-standard.md)
   and [color-system.md](references/color-system.md).
 - Do not run indefinite correction loops.

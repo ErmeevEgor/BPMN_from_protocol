@@ -10,6 +10,7 @@ import sys
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from review_contract import evaluate  # noqa: E402
 from validate_model import validate_semantics  # noqa: E402
+from quality_profiles import get_quality_profile, normalize_quality_level  # noqa: E402
 
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -17,7 +18,15 @@ if hasattr(sys.stderr, "reconfigure"):
     sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 
 
-def build(workspace: Path, model: dict, process_id: str, bpmn_requested: bool = True) -> tuple[Path, dict]:
+def build(
+    workspace: Path,
+    model: dict,
+    process_id: str,
+    bpmn_requested: bool = True,
+    quality_level: str = "L2",
+) -> tuple[Path, dict]:
+    quality_level = normalize_quality_level(quality_level)
+    quality_profile = get_quality_profile(quality_level)
     result = evaluate(workspace, model, process_id)
     steps = [step for step in (model.get("steps") or []) if isinstance(step, dict)]
     activities = [step for step in steps if step.get("task_type") not in {
@@ -37,9 +46,16 @@ def build(workspace: Path, model: dict, process_id: str, bpmn_requested: bool = 
     corporate_status = drawio_report.get("status", "NOT_RUN")
     geometry_status = "PASS" if corporate_status == "PASS" else corporate_status
     xml_status = xml_validation.get("status", "FAIL" if bpmn_requested else "NOT_REQUESTED")
-    di_status = di_validation.get("status", "FAIL" if bpmn_requested else "NOT_REQUESTED")
+    di_required = bpmn_requested and quality_level != "L1"
+    di_status = di_validation.get(
+        "status",
+        "NOT_RUN_L1_MINIMAL" if bpmn_requested and not di_required else (
+            "FAIL" if bpmn_requested else "NOT_REQUESTED"
+        ),
+    )
     if model_status == "FAIL" or corporate_status == "FAIL" \
-            or (bpmn_requested and (xml_status != "PASS" or di_status != "PASS")):
+            or (bpmn_requested and xml_status != "PASS") \
+            or (di_required and di_status != "PASS"):
         overall = "FAIL"
     elif corporate_status != "PASS" or result["critical_knowledge_blockers"] \
             or not result["post_render_review_valid"]:
@@ -47,6 +63,8 @@ def build(workspace: Path, model: dict, process_id: str, bpmn_requested: bool = 
     else:
         overall = "PASS"
     result.update({
+        "quality_level": quality_level,
+        "quality_profile": quality_profile,
         "model_source_status": model_status, "bpmn_semantics_status": model_status,
         "corporate_notation_status": corporate_status, "geometry_status": geometry_status,
         "bpmn_xml_status": xml_status, "bpmn_di_status": di_status, "overall_status": overall,
@@ -54,6 +72,9 @@ def build(workspace: Path, model: dict, process_id: str, bpmn_requested: bool = 
     lines = [
         "# Validation", "", f"Процесс: {model.get('process_name', process_id)}", "",
         f"Источник: {model.get('source_file', '')}", "",
+        f"Уровень проверки: {quality_level} — {quality_profile['name']}",
+        f"Допустимо циклов визуальной коррекции: {quality_profile['correction_rounds']}",
+        "Полнота модели: единый обязательный контракт для L1/L2/L3", "",
         f"Шагов: {len(steps)}", f"Participants: {len(model.get('participants') or [])}",
         "Internal lanes: 0", f"Human role overlays: {len(human_roles)}",
         f"System overlays: {len(activities)}",
@@ -91,9 +112,13 @@ def main() -> int:
     parser.add_argument("model_path")
     parser.add_argument("--workspace", default=".")
     parser.add_argument("--no-bpmn", action="store_true")
+    parser.add_argument("--quality-level", default="L2", choices=("L1", "L2", "L3"))
     args = parser.parse_args()
     model = json.loads(Path(args.model_path).read_text(encoding="utf-8"))
-    report, result = build(Path(args.workspace).resolve(), model, model["process_id"], not args.no_bpmn)
+    report, result = build(
+        Path(args.workspace).resolve(), model, model["process_id"], not args.no_bpmn,
+        quality_level=args.quality_level,
+    )
     print(json.dumps({"report": str(report), **result}, ensure_ascii=False, indent=2))
     return 0
 

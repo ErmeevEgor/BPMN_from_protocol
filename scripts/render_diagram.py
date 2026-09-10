@@ -31,6 +31,7 @@ DRAWIO_STABLE_SCALE_FLAGS = ["--force-device-scale-factor=1"]
 
 sys.path.insert(0, str(SCRIPTS_DIR))
 from runtime_support import find_drawio_cli, vendor_scripts_dir  # noqa: E402
+from quality_profiles import get_quality_profile, normalize_quality_level  # noqa: E402
 
 BPMN_DIAGRAMS_SKILL = vendor_scripts_dir().parent
 
@@ -72,6 +73,26 @@ def mark_visual_review_required(process_id: str, reason: str) -> None:
         md_path.write_text(text, encoding="utf-8")
 
 
+def downgrade_visual_findings_to_review(process_id: str, reason: str) -> None:
+    """Publish an L1 candidate while preserving validator findings."""
+    validation_dir = Path("output/validation")
+    json_path = validation_dir / f"{process_id}-drawio-validation.json"
+    md_path = validation_dir / f"{process_id}-drawio-validation.md"
+    if json_path.is_file():
+        report = json.loads(json_path.read_text(encoding="utf-8"))
+        report["status"] = "NEEDS_REVIEW"
+        warnings = report.setdefault("warnings", [])
+        warnings.append({"rule": "L1_VISUAL_FINDINGS_DEFERRED", "node": "diagram", "detail": reason})
+        report["warning_count"] = len(warnings)
+        json_path.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
+    if md_path.is_file():
+        text = md_path.read_text(encoding="utf-8")
+        text = text.replace("Статус: **FAIL**", "Статус: **NEEDS_REVIEW**", 1)
+        text = text.replace("Статус: **PASS**", "Статус: **NEEDS_REVIEW**", 1)
+        text += f"\n\n## L1 deferred visual findings\n\n- {reason}\n"
+        md_path.write_text(text, encoding="utf-8")
+
+
 def drawio_registry_without_data(registry: Path, destination: Path) -> Path:
     """Blank BPMN data columns only for the raw draw.io vendor pass.
 
@@ -110,7 +131,11 @@ def main():
     parser.add_argument("--png", action="store_true", default=True, help="Экспортировать PNG (по умолчанию включено)")
     parser.add_argument("--no-png", dest="png", action="store_false")
     parser.add_argument("--model", help="Путь к process_model.json (по умолчанию output/models/<id>-model.json)")
+    parser.add_argument("--quality-level", default="L2", choices=("L1", "L2", "L3"),
+                        help="Validation depth only; never changes model contents")
     args = parser.parse_args()
+    quality_level = normalize_quality_level(args.quality_level)
+    quality_profile = get_quality_profile(quality_level)
 
     py = sys.executable
     model_path = Path(args.model) if args.model else Path(f"output/models/{args.process_id}-model.json")
@@ -148,11 +173,17 @@ def main():
             print(result.stdout)
             if result.returncode != 0:
                 print(result.stderr, file=sys.stderr)
-                failed_dir = Path("output/drawio/_failed")
-                failed_dir.mkdir(parents=True, exist_ok=True)
-                shutil.copy(layouted, failed_dir / f"{args.process_id}.drawio")
-                shutil.rmtree(tmp_outdir, ignore_errors=True)
-                sys.exit(result.returncode)
+                if quality_profile["publish_visual_candidate_on_findings"]:
+                    downgrade_visual_findings_to_review(
+                        args.process_id,
+                        "L1 не выполняет цикл визуальной коррекции; замечания сохранены в отчёте",
+                    )
+                else:
+                    failed_dir = Path("output/drawio/_failed")
+                    failed_dir.mkdir(parents=True, exist_ok=True)
+                    shutil.copy(layouted, failed_dir / f"{args.process_id}.drawio")
+                    shutil.rmtree(tmp_outdir, ignore_errors=True)
+                    sys.exit(result.returncode)
             Path("output/drawio").mkdir(parents=True, exist_ok=True)
             dest_drawio = Path("output/drawio") / f"{args.process_id}.drawio"
             shutil.copy(layouted, dest_drawio)
@@ -162,28 +193,36 @@ def main():
             print(f"NEEDS_REVIEW: {reason}", file=sys.stderr)
             shutil.rmtree(tmp_outdir, ignore_errors=True)
             return
-        rendered_svg = tmp_outdir / "layout_applied.svg"
-        svg_result = subprocess.run(
-            [drawio_cli, *DRAWIO_STABLE_SCALE_FLAGS, "--export", "--format", "svg", "--embed-diagram",
-             "--border", "10", "--size", "page",
-             "--output", str(rendered_svg.resolve()), str(layouted.resolve())],
-            capture_output=True, text=True, encoding="utf-8", errors="replace",
-        )
-        if svg_result.returncode != 0 or not rendered_svg.is_file():
-            print(f"SVG_ROUTE_VALIDATION_REQUIRED: export failed ({svg_result.returncode})\n{svg_result.stderr}",
-                  file=sys.stderr)
-            sys.exit(1)
         validate_cmd = [py, str(SCRIPTS_DIR / "validate_drawio.py"), str(layouted), str(render_meta_path),
-                        str(model_path), "--svg", str(rendered_svg)]
+                        str(model_path)]
+        if quality_profile["actual_svg_geometry"]:
+            rendered_svg = tmp_outdir / "layout_applied.svg"
+            svg_result = subprocess.run(
+                [drawio_cli, *DRAWIO_STABLE_SCALE_FLAGS, "--export", "--format", "svg", "--embed-diagram",
+                 "--border", "10", "--size", "page",
+                 "--output", str(rendered_svg.resolve()), str(layouted.resolve())],
+                capture_output=True, text=True, encoding="utf-8", errors="replace",
+            )
+            if svg_result.returncode != 0 or not rendered_svg.is_file():
+                print(f"SVG_ROUTE_VALIDATION_REQUIRED: export failed ({svg_result.returncode})\n{svg_result.stderr}",
+                      file=sys.stderr)
+                sys.exit(1)
+            validate_cmd.extend(["--svg", str(rendered_svg)])
         result = subprocess.run(validate_cmd, capture_output=True, text=True, encoding="utf-8", errors="replace")
         print(result.stdout)
         if result.returncode != 0:
             print(result.stderr, file=sys.stderr)
-            failed_dir = Path("output/drawio/_failed")
-            failed_dir.mkdir(parents=True, exist_ok=True)
-            shutil.copy(layouted, failed_dir / f"{args.process_id}.drawio")
-            shutil.rmtree(tmp_outdir, ignore_errors=True)
-            sys.exit(1)
+            if quality_profile["publish_visual_candidate_on_findings"]:
+                downgrade_visual_findings_to_review(
+                    args.process_id,
+                    "L1 не выполняет actual-SVG аудит и цикл визуальной коррекции; замечания сохранены",
+                )
+            else:
+                failed_dir = Path("output/drawio/_failed")
+                failed_dir.mkdir(parents=True, exist_ok=True)
+                shutil.copy(layouted, failed_dir / f"{args.process_id}.drawio")
+                shutil.rmtree(tmp_outdir, ignore_errors=True)
+                sys.exit(1)
         Path("output/drawio").mkdir(parents=True, exist_ok=True)
         dest_drawio = Path("output/drawio") / f"{args.process_id}.drawio"
         shutil.copy(layouted, dest_drawio)

@@ -1,97 +1,130 @@
 # BPMN quality levels
 
-Select exactly one level per request. The level controls modeling granularity,
-validation depth, and correction effort; it does not relax source truth, graph
-validity, ROLE != SYSTEM, or the requirement to expose missing information.
+Select exactly one level per request. A quality level controls only validation
+depth, visual-review depth, and the correction budget. It never changes the
+business content, source coverage, modeling granularity, or requested output
+formats.
+
+## Shared content contract
+
+The following contract is identical at L1, L2, and L3:
+
+- extract the supplied source completely enough to identify every process in
+  scope and every source-backed action, role, system, object, gateway,
+  exception, transfer, input, and output;
+- do not omit or merge a fact merely to meet a time target or reduce the number
+  of diagram elements;
+- keep Activities atomic whenever action, role, system, object, control,
+  outcome, knowledge status, or source requirement differs;
+- preserve all confirmed routes and meaningful exceptions from the source;
+- never invent a missing fact; record it in `information_gaps`;
+- build the same schema-2.1 model and all formats requested by the user,
+  including draw.io, PNG, and BPMN 2.0 XML with BPMN-DI when requested;
+- always run schema, source-traceability, ROLE != SYSTEM, and graph-validity
+  checks before rendering.
+
+Choosing a faster level is never permission to show only a happy path, remove
+an Activity, omit a role/system/artifact, simplify a gateway, or skip a
+requested deliverable. If the source is large, use overview plus detailed
+subprocess diagrams at every level; do not silently discard content.
 
 ## Selection
 
-| Level | User intent | Target elapsed time | Correction budget |
+| Level | Choose when | Target elapsed time | Visual correction budget |
 |---|---|---:|---:|
-| L1 — Express draft | `быстро`, `черновик`, `эскиз`, early discussion | 2–4 minutes | 0 layout corrections |
-| L2 — Working diagram | ordinary generation, workshop, working documentation | 7–10 minutes | 1 evidence-backed correction |
-| L3 — Audit-ready diagram | `детально`, `эталон`, `для регламента`, acceptance or independent audit | 12–20 minutes | up to 2 evidence-backed corrections |
+| L1 — Basic validation | rapid review or first discussion; the user accepts visible layout findings | 3–7 minutes | 0 corrections |
+| L2 — Standard validation | ordinary generation, analysis workshop, working documentation | 7–15 minutes | 1 targeted correction |
+| L3 — Extended validation | regulation, acceptance, reference artifact, or independent audit | 20–40 minutes | up to 3 targeted corrections |
 
-Use L2 when the user does not name or imply a level. Do not ask the user to
-choose when the wording already indicates one. State the selected level and
-expected trade-off in the first progress update.
+Use L2 when the user does not name or imply a level. Infer phrases such as
+`быстро`, `минимальная проверка`, `рабочая схема`, `тщательная проверка`, or
+`для приемки` without asking a follow-up question. State the selected level
+and its validation trade-off in the first progress update.
 
 Elapsed-time targets are operating budgets, not promises about external tool
-latency. Never extend a run merely to achieve cosmetic perfection.
+latency. Preserve a first semantically valid candidate as soon as it exists.
+Never extend a run merely to achieve cosmetic perfection.
 
-## L1 — Express draft
+## L1 — Basic validation
 
-Purpose: expose the process structure quickly so people can discuss scope and
-logic.
+Purpose: return the complete source-backed model and requested files quickly,
+with only the checks required to prove that the files are structurally usable.
 
-- Extract the source once and model the happy path plus every business decision
-  that materially changes the route.
-- Prefer 6–12 operational Activities. Collapse repetitive micro-actions only
-  when role, system, object, and business outcome remain the same. Never hide a
-  real decision, exception that changes the outcome, or cross-system exchange.
-- Show confirmed human roles, execution systems, and only process-defining
-  inputs/outputs. Record unknowns in `information_gaps`; do not research or
-  infer them extensively.
-- Generate editable draw.io and PNG. Generate BPMN XML only when requested.
-- Require model/schema/graph validation and a complete PNG inspection. Run the
-  draw.io validator, but do not spend a correction round on cosmetic routing.
-- The highest permitted completion status is `DRAFT / NEEDS_REVIEW`. Report
-  visible arrow, spacing, or artifact issues explicitly.
-- If the renderer withholds the normal output because of a visual gate, publish
-  the generated candidate under a `-draft` filename and return it with the
-  failing rules. Never return nothing after a model and candidate exist.
+Run:
 
-## L2 — Working diagram
+- the complete shared content contract;
+- schema, source-traceability, ROLE != SYSTEM, and graph validation;
+- draw.io XML/structure validation and basic endpoint/reference checks;
+- XML parse, BPMN semantic references, and BPMN-DI completeness when BPMN is
+  requested;
+- one quick inspection of the complete PNG for catastrophic clipping, an empty
+  render, or an unreadable overall layout.
 
-Purpose: produce the normal working artifact used in analysis sessions. This
-matches the current standard workflow.
+Do not run a correction cycle. Actual-SVG geometric auditing, exhaustive
+edge-edge intersection review, detailed typography review, and pixel-level
+layout tuning are intentionally outside L1. Publish the candidate even when a
+visual validator reports findings, set `NEEDS_REVIEW`, and list those findings.
+Structural or semantic model errors remain `FAIL` and must be fixed because
+they would make the result unusable.
 
-- Model operational Activities with actionable names, confirmed roles and
-  systems, meaningful gateways, principal business objects, observable results,
-  and source references.
-- Include the main exception paths and repetitions that affect execution;
-  document secondary gaps instead of expanding speculative branches.
-- Generate requested draw.io, PNG, and BPMN XML artifacts plus semantic and gap
-  registries.
-- Require semantic validation, corporate draw.io validation against the
-  candidate SVG, BPMN XML validation, BPMN-DI validation when BPMN is requested,
-  and one full visual inspection.
-- Allow one evidence-backed correction that fixes the largest semantic or visual
-  problem. Re-run only the affected generation and validation stages.
-- Target `PASS`; use `NEEDS_REVIEW` when source gaps or remaining visible issues
-  prevent an honest PASS. Deliver the files in either case.
+## L2 — Standard validation
 
-## L3 — Audit-ready diagram
+Purpose: reproduce the established working workflow that normally completes
+within 10–15 minutes while keeping the full business model.
 
-Purpose: create a reference artifact suitable for regulation, acceptance, or
-independent review.
+Run everything in L1, plus:
 
-- Cover all source-backed routes, exceptions, controls, state transitions, and
-  cross-system exchanges. Keep confirmed facts, assumptions, and recommendations
-  visibly distinct.
-- Preserve atomic Activities and detailed artifact states. Verify 1C metadata
-  only when the source or an available authoritative repository provides it;
-  otherwise record a gap.
-- Split a dense process into an overview and detailed subprocess diagrams before
-  shrinking text or creating long tangled routes.
-- Generate the full requested package: draw.io, PNG, BPMN XML with BPMN-DI,
-  bpmn-js previews, semantic registry, information gaps, and validation report.
-- Require all L2 gates, inspect every complete draw.io and bpmn-js PNG, and
-  compare cross-format node/flow/artifact coverage.
-- Allow at most two evidence-backed correction rounds. Each round must address
-  named validator findings or visible defects; do not polish by intuition.
-- By 10 minutes, preserve and expose the first semantically valid candidate
-  before continuing the audit pass. If the 20-minute budget or practical context
-  budget is reached, stop and deliver the best valid candidate with `NEEDS_REVIEW`
-  plus the remaining findings. Never consume the full run and return no artifact.
+- corporate draw.io validation against the SVG exported from the same draw.io
+  candidate;
+- endpoint-to-contour checks for Sequence Flow, Message Flow, and Data
+  Association;
+- automated checks for edge-through-node paths, shared edge segments,
+  significant edge intersections, branch-label placement, text overflow,
+  role/system/artifact placement, and artifact-to-Activity attachment;
+- BPMN XML and BPMN-DI validation plus one complete bpmn-js preview inspection
+  when BPMN is requested;
+- one full visual inspection of the draw.io PNG and cross-format comparison of
+  the main node/flow/artifact coverage.
+
+Allow no more than one targeted correction. It must address named validator
+findings or an obvious visible defect. Re-run only the affected stages. Do not
+perform repeated manual coordinate tuning or continue solely to turn cosmetic
+findings into `PASS`. Deliver the best usable files with `NEEDS_REVIEW` when
+the correction budget is exhausted.
+
+## L3 — Extended validation
+
+Purpose: audit the same complete model and deliverables with the deeper review
+used for acceptance or a reference artifact.
+
+Run everything in L2, plus:
+
+- element-by-element comparison of the model, semantic registry, draw.io, and
+  BPMN XML, including roles, systems, object states, gateways, exception paths,
+  Message Flows, and Data Associations;
+- inspection of every complete draw.io and bpmn-js preview at both overview and
+  readable detail scales;
+- exhaustive review of connector geometry, labels, whitespace, typography,
+  artifact ownership, and cross-format consistency;
+- regression comparison when an approved reference or regression case exists;
+- a detailed validation report that records every gate and remaining finding.
+
+Allow up to three targeted correction rounds. Each round must address recorded
+findings and re-run only affected generation and validation stages. Preserve
+the first semantically valid candidate before extended polishing. If the
+40-minute budget or practical context budget is reached, stop and deliver the
+best valid candidate with `NEEDS_REVIEW`; never consume the run and return no
+artifact.
 
 ## Shared stopping rules
 
-1. Extraction happens once unless the source itself changes.
+1. Extract the unchanged source once.
 2. Do not regenerate unaffected processes or formats.
 3. Prefer deterministic validators and targeted fixes over repeated visual
    experimentation.
-4. When the correction budget is exhausted, stop. A precise `NEEDS_REVIEW`
-   result with usable files is better than an unbounded attempt at PASS.
-5. Always return direct artifact links, the selected level, validation status,
-   unresolved findings, and any intentionally omitted detail.
+4. Stop when the selected correction budget is exhausted.
+5. A time limit may stop validation or polishing, but it may not silently
+   reduce the process model or requested deliverables.
+6. Always return direct artifact links, the selected level, validation status,
+   checks performed, checks intentionally not performed, and unresolved
+   findings.

@@ -12,6 +12,7 @@ import subprocess
 import sys
 
 from build_validation_report import build as build_validation_report
+from quality_profiles import normalize_quality_level, write_quality_profile
 
 
 SCRIPTS = Path(__file__).resolve().parent
@@ -34,7 +35,10 @@ def main() -> int:
     parser.add_argument("--workspace", required=True)
     parser.add_argument("--no-png", action="store_true")
     parser.add_argument("--bpmn", action="store_true")
+    parser.add_argument("--quality-level", default="L2", choices=("L1", "L2", "L3"),
+                        help="Validation depth only; model completeness is identical at every level")
     args = parser.parse_args()
+    quality_level = normalize_quality_level(args.quality_level)
     source = Path(args.model).resolve()
     workspace = Path(args.workspace).resolve()
     workspace.mkdir(parents=True, exist_ok=True)
@@ -42,6 +46,7 @@ def main() -> int:
     process_id = str(model.get("process_id") or "").strip()
     if not re.fullmatch(r"[0-9A-Za-zА-Яа-яЁё_.-]+", process_id):
         raise SystemExit("Invalid process_id")
+    quality_profile_path = write_quality_profile(workspace, process_id, quality_level)
     canonical = workspace / "output/models" / f"{process_id}-model.json"
     canonical.parent.mkdir(parents=True, exist_ok=True)
     if source != canonical.resolve():
@@ -60,7 +65,10 @@ def main() -> int:
         if code:
             return code
     registry = workspace / "output/registries" / f"{process_id}-registry.md"
-    render = [sys.executable, str(SCRIPTS / "render_diagram.py"), str(registry), process_id, "--model", str(canonical)]
+    render = [
+        sys.executable, str(SCRIPTS / "render_diagram.py"), str(registry), process_id,
+        "--model", str(canonical), "--quality-level", quality_level,
+    ]
     if args.no_png:
         render.append("--no-png")
     code = run(render, workspace)
@@ -81,20 +89,23 @@ def main() -> int:
         ], workspace)
         if code:
             return code
-        bpmn_svg = workspace / "output/bpmn-preview" / f"{process_id}.svg"
-        bpmn_png = workspace / "output/bpmn-preview" / f"{process_id}.png"
-        code = run([sys.executable, str(SCRIPTS / "render_bpmn.py"), str(bpmn), str(bpmn_svg), str(bpmn_png)], workspace)
-        if code:
-            return code
-        code = run([
-            sys.executable, str(SCRIPTS / "validate_bpmn_di.py"), str(bpmn), "--model", str(canonical),
-            "--svg", str(bpmn_svg), "--png", str(bpmn_png), "--report",
-            str(workspace / "output/validation" / f"{process_id}-bpmn-di-validation.json"),
-        ], workspace)
-        if code:
-            return code
+        if quality_level != "L1":
+            bpmn_svg = workspace / "output/bpmn-preview" / f"{process_id}.svg"
+            bpmn_png = workspace / "output/bpmn-preview" / f"{process_id}.png"
+            code = run([sys.executable, str(SCRIPTS / "render_bpmn.py"), str(bpmn), str(bpmn_svg), str(bpmn_png)], workspace)
+            if code:
+                return code
+            code = run([
+                sys.executable, str(SCRIPTS / "validate_bpmn_di.py"), str(bpmn), "--model", str(canonical),
+                "--svg", str(bpmn_svg), "--png", str(bpmn_png), "--report",
+                str(workspace / "output/validation" / f"{process_id}-bpmn-di-validation.json"),
+            ], workspace)
+            if code:
+                return code
     model = json.loads(canonical.read_text(encoding="utf-8"))
-    report, result = build_validation_report(workspace, model, process_id, bpmn_requested=args.bpmn)
+    report, result = build_validation_report(
+        workspace, model, process_id, bpmn_requested=args.bpmn, quality_level=quality_level,
+    )
     print(json.dumps({
         "model": str(canonical),
         "semantic_registry": str(workspace / "output/registries" / f"{process_id}-semantic-registry.md"),
@@ -105,6 +116,8 @@ def main() -> int:
         "bpmn": str(bpmn) if bpmn else None,
         "bpmn_svg": str(bpmn_svg) if bpmn_svg else None,
         "bpmn_png": str(bpmn_png) if bpmn_png else None,
+        "quality_level": quality_level,
+        "quality_profile": str(quality_profile_path),
         "validation": str(report), "status": result["overall_status"],
     }, ensure_ascii=False, indent=2))
     return 0

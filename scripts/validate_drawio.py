@@ -645,7 +645,10 @@ def validate_corporate(drawio_path: Path, meta: dict, model: dict, svg_path: Pat
     for flow in meta.get("sequence_flows") or []:
         condition, fid = str(flow.get("condition") or "").strip(), str(flow.get("id"))
         if not condition or f"LABEL.{fid}" not in cells: continue
-        label_rect = _rect(cells[f"LABEL.{fid}"], cells)
+        # draw.io may crop/translate the exported SVG. Branch-label proximity
+        # must therefore be measured in the same coordinate space as the
+        # rendered route, not against the original mxGraph coordinates.
+        label_rect = svg_bounds.get(f"LABEL.{fid}", _rect(cells[f"LABEL.{fid}"], cells))
         points = routes.get(fid, [])
         if label_rect and points:
             center = ((label_rect[0] + label_rect[2]) / 2, (label_rect[1] + label_rect[3]) / 2)

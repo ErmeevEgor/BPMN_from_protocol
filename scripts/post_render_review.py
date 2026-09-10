@@ -10,6 +10,7 @@ import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from review_contract import sha256  # noqa: E402
+from quality_profiles import normalize_quality_level  # noqa: E402
 
 
 DEFAULT_CHECKS = [
@@ -21,6 +22,17 @@ DEFAULT_CHECKS = [
     "diagram scale and whitespace are suitable for reading",
 ]
 
+L1_CHECKS = [
+    "render is non-empty and the complete process is visible",
+    "no catastrophic clipping or unreadable overall layout",
+]
+
+L3_EXTRA_CHECKS = [
+    "every connector, label, role, system, and artifact was inspected at readable detail",
+    "model, registry, draw.io, and BPMN previews were compared element by element",
+    "regression comparison was performed when an approved reference exists",
+]
+
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
@@ -29,7 +41,9 @@ def main() -> int:
     parser.add_argument("--status", required=True, choices=("PASS", "FAIL"))
     parser.add_argument("--reviewer", required=True)
     parser.add_argument("--notes", default="")
+    parser.add_argument("--quality-level", default="L2", choices=("L1", "L2", "L3"))
     args = parser.parse_args()
+    quality_level = normalize_quality_level(args.quality_level)
     workspace = Path(args.workspace).resolve()
     drawio = workspace / "output" / "drawio" / f"{args.process_id}.drawio"
     png = workspace / "output" / "preview" / f"{args.process_id}.png"
@@ -63,7 +77,10 @@ def main() -> int:
         "reviewer": args.reviewer,
         "reviewed_at": datetime.now(timezone.utc).isoformat(),
         "artifact_sha256": hashes,
-        "checks": DEFAULT_CHECKS,
+        "quality_level": quality_level,
+        "checks": L1_CHECKS if quality_level == "L1" else (
+            DEFAULT_CHECKS + L3_EXTRA_CHECKS if quality_level == "L3" else DEFAULT_CHECKS
+        ),
         "notes": args.notes,
     }
     output = workspace / "output" / "validation" / f"{args.process_id}-post-render-review.json"
